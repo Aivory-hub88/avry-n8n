@@ -161,7 +161,28 @@ const NODE_TYPE_MAP = {
   messaging: {
     type: 'n8n-nodes-base.slack',
     typeVersion: 2.2,
-    parameters: { operation: 'message', channel: '', text: '' },
+    parameters: { resource: 'message', operation: 'send', channel: '', text: '' },
+  },
+  rss: {
+    type: 'n8n-nodes-base.rssFeedRead',
+    typeVersion: 1.1,
+    parameters: { url: '' },
+  },
+  gmail: {
+    type: 'n8n-nodes-base.gmail',
+    typeVersion: 2.1,
+    parameters: { resource: 'message', operation: 'send', sendTo: '', subject: '', message: '' },
+  },
+  openai: {
+    type: 'n8n-nodes-base.openAi',
+    typeVersion: 1.3,
+    parameters: {
+      resource: 'text',
+      operation: 'message',
+      modelId: { value: 'gpt-4o', mode: 'list' },
+      messages: { values: [{ content: '', role: 'user' }] },
+      options: {},
+    },
   },
   respond: {
     type: 'n8n-nodes-base.respondToWebhook',
@@ -199,9 +220,12 @@ function detectIntent(stepTitle, stepType, stepDescription) {
   const text = `${stepTitle} ${stepType} ${stepDescription || ''}`.toLowerCase();
 
   const PATTERNS = {
+    rss:       /\brss\b|\bfeed\b/,
+    gmail:     /gmail/,
     schedule:  /schedule|cron|daily|hourly|weekly|timer|interval|every\s+\d|jadwal|setiap|berkala|per\s*\d+\s*jam|tiap/,
     email:     /email|mail\b|smtp|inbox|send.*mail/,
     database:  /mysql|postgres|postgresql|sql\b|database|db\b|query|select|insert/,
+    openai:    /openai|open\s*ai|\bgpt-?\d/,
     http:      /\bhttp\b|\bapi\b|request\b|fetch\b|call.*endpoint|rest\b|post.*url|get.*url/,
     ssh:       /\bssh\b|\bscp\b|\bexec\b|remote.*command|run.*command|shell\b/,
     ftp:       /ftp|sftp|file.*transfer|upload.*file|download.*file/,
@@ -253,6 +277,22 @@ function buildRealN8nWorkflow({ draftId, intent, steps }) {
     };
   }
 
+  // Intents whose node can return multiple items — when immediately followed
+  // by an AI step, a Limit node goes in between so the agent runs once per
+  // batch instead of once per item.
+  const MULTI_ITEM_INTENTS = new Set(['rss', 'http', 'database']);
+  const addConnection = (from, to, type = 'main') => {
+    if (!connections[from]) connections[from] = {};
+    if (!connections[from][type]) connections[from][type] = [[]];
+    connections[from][type][0].push({ node: to, type, index: 0 });
+  };
+
+  // mainFlowNames tracks the sequential chain that gets auto-wired below —
+  // Chat Model sub-nodes are pushed to `nodes` but NOT into this array, since
+  // they connect via ai_languageModel, not the main sequence.
+  const mainFlowNames = [];
+  let prevIntent = null;
+
   // Build nodes from steps
   steps.forEach((step, index) => {
     // Use nodeType from step if provided (from ZeroClaw/n8n MCP inspection)
@@ -275,28 +315,75 @@ function buildRealN8nWorkflow({ draftId, intent, steps }) {
       );
       nodeConfig = NODE_TYPE_MAP[intent] || NODE_TYPE_MAP.default;
     }
-    const nodeName   = step.title || `Step ${index + 1}`;
-    const nodeId     = `node_${index + 1}_${intent}`;
+    const nodeName = step.title || `Step ${index + 1}`;
+    const position = [START_X + (index * GRID_X), START_Y];
 
+    // AI steps deploy as a native AI Agent node + a linked Chat Model
+    // sub-node (ai_languageModel connection) instead of a single generic
+    // node — mirrors frontend/avry-user-dashboard's nodeMapper.ts.
+    if (intent === 'ai' || intent === 'openai') {
+      const isAnthropic = /claude|anthropic/i.test(`${step.title || ''} ${step.action || ''} ${step.description || ''}`);
+      const modelNodeName = `${isAnthropic ? 'Anthropic' : 'OpenAI'} Chat Model${index > 0 ? ` ${index}` : ''}`;
+
+      if (prevIntent && MULTI_ITEM_INTENTS.has(prevIntent)) {
+        const limitName = `Limit ${index}`;
+        nodes.push({
+          id: `node_${index + 1}_limit`,
+          name: limitName,
+          type: 'n8n-nodes-base.limit',
+          typeVersion: 1,
+          position: [position[0] - 90, position[1]],
+          parameters: { maxItems: 1 },
+        });
+        addConnection(mainFlowNames[mainFlowNames.length - 1], limitName, 'main');
+        mainFlowNames.push(limitName);
+      }
+
+      nodes.push({
+        id: `node_${index + 1}_agent`,
+        name: nodeName,
+        type: '@n8n/n8n-nodes-langchain.agent',
+        typeVersion: 1.7,
+        position,
+        parameters: {
+          promptType: 'define',
+          text: '={{ $json.response || $json.body || JSON.stringify($json) }}',
+          options: { systemMessage: step.description || step.title || step.action || '' },
+        },
+      });
+      nodes.push({
+        id: `node_${index + 1}_model`,
+        name: modelNodeName,
+        type: isAnthropic ? '@n8n/n8n-nodes-langchain.lmChatAnthropic' : '@n8n/n8n-nodes-langchain.lmChatOpenAi',
+        typeVersion: 1,
+        position: [position[0], position[1] + 200],
+        parameters: {
+          model: { value: isAnthropic ? 'claude-3-5-sonnet-20241022' : 'gpt-4o', mode: 'list' },
+          options: {},
+        },
+      });
+      addConnection(modelNodeName, nodeName, 'ai_languageModel');
+
+      if (mainFlowNames.length) addConnection(mainFlowNames[mainFlowNames.length - 1], nodeName, 'main');
+      mainFlowNames.push(nodeName);
+      prevIntent = intent;
+      return;
+    }
+
+    const nodeId = `node_${index + 1}_${intent}`;
     nodes.push({
       id:          nodeId,
       name:        nodeName,
       type:        nodeConfig.type,
       typeVersion: nodeConfig.typeVersion,
-      position:    [START_X + (index * GRID_X), START_Y],
+      position,
       parameters:  { ...nodeConfig.parameters },
     });
+
+    if (mainFlowNames.length) addConnection(mainFlowNames[mainFlowNames.length - 1], nodeName, 'main');
+    mainFlowNames.push(nodeName);
+    prevIntent = intent;
   });
-
-  // Auto-wire connections: each node output → next node input
-  for (let i = 0; i < nodes.length - 1; i++) {
-    const fromName = nodes[i].name;
-    const toName   = nodes[i + 1].name;
-
-    connections[fromName] = {
-      main: [[{ node: toName, type: 'main', index: 0 }]],
-    };
-  }
 
   return {
     name:        intent || `Aivory Workflow ${draftId}`,
