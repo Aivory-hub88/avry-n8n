@@ -13,25 +13,6 @@ const DRAFTS_DIR = path.join(WORKFLOW_STORE, 'drafts');
 const N8N_HOST = (process.env.N8N_HOST || 'http://localhost:5678').replace(/\/$/, '');
 const N8N_API_KEY = process.env.N8N_API_KEY || '';
 
-// Structured JSON logging
-const logInfo = (data) => {
-  console.log(JSON.stringify({
-    level: 'info',
-    service: 'n8n-as-code-service',
-    ts: new Date().toISOString(),
-    ...data,
-  }));
-};
-
-const logError = (data) => {
-  console.error(JSON.stringify({
-    level: 'error',
-    service: 'n8n-as-code-service',
-    ts: new Date().toISOString(),
-    ...data,
-  }));
-};
-
 function loadEnvFile(filePath) {
   if (!fs.existsSync(filePath)) return;
   const lines = fs.readFileSync(filePath, 'utf8').split(/\r?\n/);
@@ -81,6 +62,7 @@ function normalizeSteps(steps) {
   }));
 }
 
+function validateWorkflowSpecV1(body) {  if (!body || typeof body !== 'object') {    return { valid: false, error: 'Request body must be an object' };  }  const { steps } = body;  if (!Array.isArray(steps) || steps.length === 0) {    return { valid: false, error: 'steps must be a non-empty array' };  }  for (let i = 0; i < steps.length; i++) {    const step = steps[i];    if (!step.nodeType || typeof step.nodeType !== 'string') {      return { valid: false, error: `Step ${i + 1}: nodeType is required and must be a string` };    }    if (!step.parameters || typeof step.parameters !== 'object') {      return { valid: false, error: `Step ${i + 1}: parameters is required and must be an object` };    }    if (!step.title && !step.action) {      return { valid: false, error: `Step ${i + 1}: title or action is required` };    }  }  return { valid: true };}
 function buildWorkflowCode({ draftId, intent, steps, config }) {
   const payload = {
     draftId,
@@ -291,14 +273,14 @@ function buildRealN8nWorkflow({ draftId, intent, steps }) {
   // Chat Model sub-nodes are pushed to `nodes` but NOT into this array, since
   // they connect via ai_languageModel, not the main sequence.
   const mainFlowNames = [];
-  let prevIntent = null;
+  let prevDetectedIntent = null;
 
   // Build nodes from steps
   steps.forEach((step, index) => {
     // Use nodeType from step if provided (from ZeroClaw/n8n MCP inspection)
     // Fall back to detectIntent only if nodeType is not available
     let nodeConfig;
-    let intent;
+    let detectedIntent;
     if (step.nodeType) {
       // Direct n8n node type provided — use it directly
       nodeConfig = {
@@ -306,14 +288,14 @@ function buildRealN8nWorkflow({ draftId, intent, steps }) {
         typeVersion: step.typeVersion || 1,
         parameters: step.parameters || {},
       };
-      intent = 'direct';
+      detectedIntent = 'direct';
     } else {
-      intent = detectIntent(
+      detectedIntent = detectIntent(
         step.title || step.action || '',
         step.type  || '',
         step.description || ''
       );
-      nodeConfig = NODE_TYPE_MAP[intent] || NODE_TYPE_MAP.default;
+      nodeConfig = NODE_TYPE_MAP[detectedIntent] || NODE_TYPE_MAP.default;
     }
     const nodeName = step.title || `Step ${index + 1}`;
     const position = [START_X + (index * GRID_X), START_Y];
@@ -321,11 +303,11 @@ function buildRealN8nWorkflow({ draftId, intent, steps }) {
     // AI steps deploy as a native AI Agent node + a linked Chat Model
     // sub-node (ai_languageModel connection) instead of a single generic
     // node — mirrors frontend/avry-user-dashboard's nodeMapper.ts.
-    if (intent === 'ai' || intent === 'openai') {
+    if (detectedIntent === 'ai' || detectedIntent === 'openai') {
       const isAnthropic = /claude|anthropic/i.test(`${step.title || ''} ${step.action || ''} ${step.description || ''}`);
       const modelNodeName = `${isAnthropic ? 'Anthropic' : 'OpenAI'} Chat Model${index > 0 ? ` ${index}` : ''}`;
 
-      if (prevIntent && MULTI_ITEM_INTENTS.has(prevIntent)) {
+      if (prevDetectedIntent && MULTI_ITEM_INTENTS.has(prevDetectedIntent)) {
         const limitName = `Limit ${index}`;
         nodes.push({
           id: `node_${index + 1}_limit`,
@@ -366,11 +348,11 @@ function buildRealN8nWorkflow({ draftId, intent, steps }) {
 
       if (mainFlowNames.length) addConnection(mainFlowNames[mainFlowNames.length - 1], nodeName, 'main');
       mainFlowNames.push(nodeName);
-      prevIntent = intent;
+      prevDetectedIntent = detectedIntent;
       return;
     }
 
-    const nodeId = `node_${index + 1}_${intent}`;
+    const nodeId = `node_${index + 1}_${index}`;
     nodes.push({
       id:          nodeId,
       name:        nodeName,
@@ -382,7 +364,7 @@ function buildRealN8nWorkflow({ draftId, intent, steps }) {
 
     if (mainFlowNames.length) addConnection(mainFlowNames[mainFlowNames.length - 1], nodeName, 'main');
     mainFlowNames.push(nodeName);
-    prevIntent = intent;
+    prevDetectedIntent = detectedIntent;
   });
 
   return {
@@ -536,27 +518,12 @@ app.get('/health', (req, res) => {
 app.post('/drafts/build', (req, res) => {
   try {
     const { session_id, draft_id, intent, steps, config } = req.body || {};
-    
-    logInfo({ event: 'request', path: '/drafts/build', session_id });
-    
     const normalizedSteps = normalizeSteps(steps);
     if (!intent || typeof intent !== 'string') {
-      return res.status(400).json({
-        error: {
-          code: 'INVALID_WORKFLOW_SPEC',
-          message: 'intent is required',
-          source: 'n8n-as-code-service'
-        }
-      });
+      return res.status(400).json({ error: true, message: 'intent is required' });
     }
     if (normalizedSteps.length === 0) {
-      return res.status(400).json({
-        error: {
-          code: 'INVALID_WORKFLOW_SPEC',
-          message: 'steps must be a non-empty array',
-          source: 'n8n-as-code-service'
-        }
-      });
+      return res.status(400).json({ error: true, message: 'steps must be a non-empty array' });
     }
 
     ensureDraftsDir();
@@ -581,8 +548,6 @@ app.post('/drafts/build', (req, res) => {
     }));
     writeMeta(resolvedDraftId, meta);
 
-    logInfo({ event: 'success', path: '/drafts/build', status: 'ok', draftId: resolvedDraftId });
-
     res.json({
       draft_id: resolvedDraftId,
       workflow_code_path: workflowPath,
@@ -590,11 +555,6 @@ app.post('/drafts/build', (req, res) => {
       state: 'draft_created',
     });
   } catch (error) {
-    logError({
-      event: 'error',
-      path: '/drafts/build',
-      error_message: error.message
-    });
     res.status(error.status || 500).json({ error: true, message: error.message });
   }
 });
@@ -828,27 +788,56 @@ function stripCredentialsForSandbox(workflowDef) {
   // Deep clone
   const wf = JSON.parse(JSON.stringify(workflowDef));
 
-  // Nodes that need credential stripping — replace with Set node
-  // so n8n can execute without credential errors
-  const CREDENTIAL_NODE_TYPES = [
-    'n8n-nodes-base.mySql',
-    'n8n-nodes-base.postgres',
-    'n8n-nodes-base.emailSend',
-    'n8n-nodes-base.ssh',
-    'n8n-nodes-base.ftp',
-    'n8n-nodes-base.slack',
-    'n8n-nodes-base.notion',
-    'n8n-nodes-base.googleSheets',
-  ];
+  // Only core structural nodes execute for real in the sandbox — every
+  // integration node (Slack, HubSpot, Zendesk, ...) is stubbed with a Set
+  // node. The old approach blacklisted 8 specific credential node types;
+  // any integration outside that list (e.g. HubSpot) ran for real, hit
+  // "required parameter" / credential errors, and failed the whole test.
+  // The sandbox validates flow structure, not third-party API calls.
+  const CORE_SANDBOX_TYPES = new Set([
+    'n8n-nodes-base.manualTrigger',
+    'n8n-nodes-base.set',
+    'n8n-nodes-base.if',
+    'n8n-nodes-base.switch',
+    'n8n-nodes-base.merge',
+    'n8n-nodes-base.noOp',
+    'n8n-nodes-base.filter',
+    'n8n-nodes-base.code',
+  ]);
 
   wf.nodes = wf.nodes.map(node => {
     // Remove any credential fields
     const stripped = { ...node };
     delete stripped.credentials;
 
-    // If node requires credentials, swap to a harmless Set node
-    // that proves the logic flow works without credential errors
-    if (CREDENTIAL_NODE_TYPES.includes(node.type)) {
+    // Non-manual trigger nodes (webhook, app event triggers) cannot start a
+    // manual /rest/.../run execution — n8n rejects the run with "No node to
+    // start the workflow from could be found", which made EVERY sandbox test
+    // fail. Swap them for a Manual Trigger, preserving id/name/position so
+    // the workflow connections stay intact.
+    const loweredType = (node.type || '').toLowerCase();
+    const isNonManualTrigger =
+      (loweredType.includes('trigger') && loweredType !== 'n8n-nodes-base.manualtrigger') ||
+      loweredType === 'n8n-nodes-base.webhook' ||
+      // Trigger types whose names lack the word "trigger" (static-fallback
+      // node resolution emits these) — without this they get stubbed as Set
+      // nodes and the workflow has no start node at all.
+      loweredType === 'n8n-nodes-base.cron' ||
+      loweredType === 'n8n-nodes-base.interval';
+    if (isNonManualTrigger) {
+      return {
+        id:          stripped.id,
+        name:        stripped.name,
+        type:        'n8n-nodes-base.manualTrigger',
+        typeVersion: 1,
+        position:    stripped.position,
+        parameters:  {},
+      };
+    }
+
+    // Any non-core node is swapped to a harmless Set node that proves the
+    // logic flow works without credential/parameter errors
+    if (!CORE_SANDBOX_TYPES.has(stripped.type)) {
       return {
         id:          stripped.id,
         name:        stripped.name,
@@ -1072,18 +1061,7 @@ app.post('/drafts/bind-credentials', async (req, res) => {
 app.post('/drafts/deploy', async (req, res) => {
   try {
     const { draft_id, activate = true } = req.body || {};
-    
-    logInfo({ event: 'request', path: '/drafts/deploy', draft_id });
-    
-    if (!draft_id) {
-      return res.status(400).json({
-        error: {
-          code: 'INVALID_WORKFLOW_SPEC',
-          message: 'draft_id is required',
-          source: 'n8n-as-code-service'
-        }
-      });
-    }
+    if (!draft_id) return res.status(400).json({ error: true, message: 'draft_id is required' });
 
     const meta        = readMeta(draft_id);
     const workflowDef = buildRealN8nWorkflow({
@@ -1098,11 +1076,8 @@ app.post('/drafts/deploy', async (req, res) => {
 
     if (missing.length > 0) {
       return res.status(400).json({
-        error: {
-          code: 'INVALID_WORKFLOW_SPEC',
-          message: `Cannot deploy: ${missing.length} credential(s) missing`,
-          source: 'n8n-as-code-service'
-        },
+        error:   true,
+        message: `Cannot deploy: ${missing.length} credential(s) missing`,
         missing,
       });
     }
@@ -1154,15 +1129,6 @@ app.post('/drafts/deploy', async (req, res) => {
     meta.updatedAt = new Date().toISOString();
     writeMeta(draft_id, meta);
 
-    logInfo({ 
-      event: 'success', 
-      path: '/drafts/deploy', 
-      status: 'ok', 
-      draftId, 
-      workflowId,
-      activated 
-    });
-
     return res.json({
       draft_id,
       workflowId,
@@ -1174,11 +1140,6 @@ app.post('/drafts/deploy', async (req, res) => {
         : `Workflow deployed (not activated). Open: ${n8nHost}/workflow/${workflowId}`,
     });
   } catch (error) {
-    logError({
-      event: 'error',
-      path: '/drafts/deploy',
-      error_message: error.message
-    });
     res.status(error.status || 500).json({ error: true, message: error.message });
   }
 });
@@ -1208,7 +1169,6 @@ app.post('/drafts/cleanup', (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3500;
-app.listen(PORT, '127.0.0.1', () => {
-  console.log(`n8n-as-code adapter running on 127.0.0.1:${PORT}`);
+app.listen(3500, '127.0.0.1', () => {
+  console.log('n8n-as-code adapter running on 127.0.0.1:3500');
 });
