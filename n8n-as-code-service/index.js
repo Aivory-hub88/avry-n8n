@@ -278,11 +278,12 @@ function buildRealN8nWorkflow({ draftId, intent, steps }) {
   // batch instead of once per item.
   const MULTI_ITEM_INTENTS = new Set(['rss', 'http', 'database']);
 
-  // n8n-nodes-base.splitInBatches output convention — same unverified-but-
-  // documented assumption as frontend/avry-user-dashboard/lib/workflowConverter.ts's
-  // LOOP_DONE_OUTPUT/LOOP_BODY_OUTPUT (no local n8n install to check against
-  // in this sandbox either): output 0 fires once after all batches are done,
-  // output 1 fires once per batch and is where the loop body connects.
+  // n8n-nodes-base.splitInBatches output convention — same as
+  // frontend/avry-user-dashboard/lib/workflowConverter.ts's LOOP_DONE_OUTPUT/
+  // LOOP_BODY_OUTPUT: output 0 fires once after all batches are done, output
+  // 1 fires once per batch and is where the loop body connects. Confirmed
+  // against this VPS's real n8n instance right after this file was deployed
+  // (a trigger->loop->body->finish sandbox test executed end to end).
   const LOOP_DONE_OUTPUT = 0;
   const LOOP_BODY_OUTPUT = 1;
 
