@@ -59,6 +59,20 @@ function normalizeSteps(steps) {
     typeVersion: step.typeVersion || null,
     config: step.config || {},
     n8nInspection: step.n8nInspection || null,
+    // Nested branch containers — only present for 'condition'|'switch'|'loop'
+    // steps (see frontend/avry-user-dashboard/lib/workflows/copilotStateMachine.ts's
+    // GeneratedWorkflowStep). Recursively normalized so buildRealN8nWorkflow()
+    // sees the same shape at every nesting depth.
+    ...(Array.isArray(step.branches) && step.branches.length
+      ? {
+          branches: step.branches.map((b) => ({
+            key: b.key,
+            label: b.label,
+            steps: normalizeSteps(b.steps),
+          })),
+        }
+      : {}),
+    ...(step.loopConfig ? { loopConfig: step.loopConfig } : {}),
   }));
 }
 
@@ -263,109 +277,253 @@ function buildRealN8nWorkflow({ draftId, intent, steps }) {
   // by an AI step, a Limit node goes in between so the agent runs once per
   // batch instead of once per item.
   const MULTI_ITEM_INTENTS = new Set(['rss', 'http', 'database']);
-  const addConnection = (from, to, type = 'main') => {
+
+  // n8n-nodes-base.splitInBatches output convention — same unverified-but-
+  // documented assumption as frontend/avry-user-dashboard/lib/workflowConverter.ts's
+  // LOOP_DONE_OUTPUT/LOOP_BODY_OUTPUT (no local n8n install to check against
+  // in this sandbox either): output 0 fires once after all batches are done,
+  // output 1 fires once per batch and is where the loop body connects.
+  const LOOP_DONE_OUTPUT = 0;
+  const LOOP_BODY_OUTPUT = 1;
+
+  // `branchIndex` selects which of the source's n8n outputs this connection
+  // comes from — always 0 (the only output) for a plain node; only
+  // condition/switch/loop primaries have more than one.
+  const addConnection = (from, to, type = 'main', branchIndex = 0) => {
     if (!connections[from]) connections[from] = {};
-    if (!connections[from][type]) connections[from][type] = [[]];
-    connections[from][type][0].push({ node: to, type, index: 0 });
+    if (!connections[from][type]) connections[from][type] = [];
+    while (connections[from][type].length <= branchIndex) connections[from][type].push([]);
+    connections[from][type][branchIndex].push({ node: to, type, index: 0 });
   };
 
-  // mainFlowNames tracks the sequential chain that gets auto-wired below —
-  // Chat Model sub-nodes are pushed to `nodes` but NOT into this array, since
-  // they connect via ai_languageModel, not the main sequence.
-  const mainFlowNames = [];
-  let prevDetectedIntent = null;
+  // `nodeSeq` is a running counter across the WHOLE recursive walk (not just
+  // one steps array) so node ids/positions stay unique once branches/loop
+  // bodies are nested — mirrors the frontend's globalStepCounter.
+  let nodeSeq = 0;
 
-  // Build nodes from steps
-  steps.forEach((step, index) => {
-    // Use nodeType from step if provided (from ZeroClaw/n8n MCP inspection)
-    // Fall back to detectIntent only if nodeType is not available
-    let nodeConfig;
-    let detectedIntent;
-    if (step.nodeType) {
-      // Direct n8n node type provided — use it directly
-      nodeConfig = {
-        type: step.nodeType,
-        typeVersion: step.typeVersion || 1,
-        parameters: step.parameters || {},
-      };
-      detectedIntent = 'direct';
-    } else {
-      detectedIntent = detectIntent(
-        step.title || step.action || '',
-        step.type  || '',
-        step.description || ''
-      );
-      nodeConfig = NODE_TYPE_MAP[detectedIntent] || NODE_TYPE_MAP.default;
-    }
-    const nodeName = step.title || `Step ${index + 1}`;
-    const position = [START_X + (index * GRID_X), START_Y];
+  function buildLoopNode(step) {
+    const idx = nodeSeq++;
+    const position = [START_X + (idx * GRID_X), START_Y];
+    return {
+      id: `node_${idx + 1}_loop`,
+      name: step.title || `Step ${idx + 1}`,
+      type: 'n8n-nodes-base.splitInBatches',
+      typeVersion: 3,
+      position,
+      parameters: { batchSize: (step.loopConfig && step.loopConfig.batchSize) || 1, options: {} },
+    };
+  }
 
-    // AI steps deploy as a native AI Agent node + a linked Chat Model
-    // sub-node (ai_languageModel connection) instead of a single generic
-    // node — mirrors frontend/avry-user-dashboard's nodeMapper.ts.
-    if (detectedIntent === 'ai' || detectedIntent === 'openai') {
-      const isAnthropic = /claude|anthropic/i.test(`${step.title || ''} ${step.action || ''} ${step.description || ''}`);
-      const modelNodeName = `${isAnthropic ? 'Anthropic' : 'OpenAI'} Chat Model${index > 0 ? ` ${index}` : ''}`;
+  function buildSwitchNode(step) {
+    const idx = nodeSeq++;
+    const position = [START_X + (idx * GRID_X), START_Y];
+    return {
+      id: `node_${idx + 1}_switch`,
+      name: step.title || `Step ${idx + 1}`,
+      type: 'n8n-nodes-base.switch',
+      typeVersion: 3,
+      position,
+      parameters: {
+        mode: 'rules',
+        rules: {
+          values: step.branches.map((b) => ({
+            conditions: {
+              options: { caseSensitive: true, leftValue: '', typeValidation: 'strict' },
+              conditions: [
+                { leftValue: '={{ $json.response }}', rightValue: b.key, operator: { type: 'string', operation: 'equals' } },
+              ],
+              combinator: 'and',
+            },
+            renameOutput: true,
+            outputKey: b.label || b.key,
+          })),
+        },
+        options: { fallbackOutput: 'none' },
+      },
+    };
+  }
 
-      if (prevDetectedIntent && MULTI_ITEM_INTENTS.has(prevDetectedIntent)) {
-        const limitName = `Limit ${index}`;
-        nodes.push({
-          id: `node_${index + 1}_limit`,
-          name: limitName,
-          type: 'n8n-nodes-base.limit',
-          typeVersion: 1,
-          position: [position[0] - 90, position[1]],
-          parameters: { maxItems: 1 },
-        });
-        addConnection(mainFlowNames[mainFlowNames.length - 1], limitName, 'main');
-        mainFlowNames.push(limitName);
+  function buildConditionNode(step) {
+    const idx = nodeSeq++;
+    const position = [START_X + (idx * GRID_X), START_Y];
+    // Plain if-node scaffold — 2 fixed outputs (true=0/false=1), matching
+    // branches[0]/branches[1] by array position. Same placeholder condition
+    // as NODE_TYPE_MAP.filter; the user fills in the real field later.
+    return {
+      id: `node_${idx + 1}_if`,
+      name: step.title || `Step ${idx + 1}`,
+      type: 'n8n-nodes-base.if',
+      typeVersion: 2,
+      position,
+      parameters: { conditions: { options: {}, conditions: [] } },
+    };
+  }
+
+  /**
+   * Recursively convert a step array, wiring each step's primary node from
+   * `entryNodeName`'s `entryBranchIndex`-th output (only meaningful for the
+   * very first step in `stepList`). `entryNodeName` is `null` at the very
+   * top level — this file never synthesizes a trigger node of its own, the
+   * first step IS the trigger and gets no incoming connection, matching the
+   * pre-existing (pre-branch/loop) behavior of this function. Returns the
+   * tail node name a caller should continue its own chain from.
+   */
+  function convertSteps(stepList, entryNodeName, entryBranchIndex) {
+    let prevNodeName    = entryNodeName;
+    let prevBranchIndex = entryBranchIndex;
+    let prevDetectedIntent = null;
+
+    stepList.forEach((step, i) => {
+      const hasBranches = !!(step.branches && step.branches.length);
+      let primaryName;
+      let detectedIntent = null;
+
+      let connectFrom   = prevNodeName;
+      let connectBranch = i === 0 ? prevBranchIndex : 0;
+
+      if (hasBranches && step.type === 'switch') {
+        const node = buildSwitchNode(step);
+        nodes.push(node);
+        if (connectFrom) addConnection(connectFrom, node.name, 'main', connectBranch);
+        primaryName = node.name;
+      } else if (hasBranches && step.type === 'loop') {
+        const node = buildLoopNode(step);
+        nodes.push(node);
+        if (connectFrom) addConnection(connectFrom, node.name, 'main', connectBranch);
+        primaryName = node.name;
+      } else if (hasBranches) {
+        const node = buildConditionNode(step);
+        nodes.push(node);
+        if (connectFrom) addConnection(connectFrom, node.name, 'main', connectBranch);
+        primaryName = node.name;
+      } else {
+        // Use nodeType from step if provided (from ZeroClaw/n8n MCP inspection)
+        // Fall back to detectIntent only if nodeType is not available
+        let nodeConfig;
+        if (step.nodeType) {
+          nodeConfig = {
+            type: step.nodeType,
+            typeVersion: step.typeVersion || 1,
+            parameters: step.parameters || {},
+          };
+          detectedIntent = 'direct';
+        } else {
+          detectedIntent = detectIntent(
+            step.title || step.action || '',
+            step.type  || '',
+            step.description || ''
+          );
+          nodeConfig = NODE_TYPE_MAP[detectedIntent] || NODE_TYPE_MAP.default;
+        }
+        const idx = nodeSeq++;
+        const nodeName = step.title || `Step ${idx + 1}`;
+        const position = [START_X + (idx * GRID_X), START_Y];
+
+        // AI steps deploy as a native AI Agent node + a linked Chat Model
+        // sub-node (ai_languageModel connection) instead of a single generic
+        // node — mirrors frontend/avry-user-dashboard's nodeMapper.ts.
+        if (detectedIntent === 'ai' || detectedIntent === 'openai') {
+          const isAnthropic = /claude|anthropic/i.test(`${step.title || ''} ${step.action || ''} ${step.description || ''}`);
+          const modelNodeName = `${isAnthropic ? 'Anthropic' : 'OpenAI'} Chat Model${idx > 0 ? ` ${idx}` : ''}`;
+
+          if (connectFrom && prevDetectedIntent && MULTI_ITEM_INTENTS.has(prevDetectedIntent)) {
+            const limitName = `Limit ${idx}`;
+            nodes.push({
+              id: `node_${idx + 1}_limit`,
+              name: limitName,
+              type: 'n8n-nodes-base.limit',
+              typeVersion: 1,
+              position: [position[0] - 90, position[1]],
+              parameters: { maxItems: 1 },
+            });
+            addConnection(connectFrom, limitName, 'main', connectBranch);
+            connectFrom = limitName;
+            connectBranch = 0;
+          }
+
+          nodes.push({
+            id: `node_${idx + 1}_agent`,
+            name: nodeName,
+            type: '@n8n/n8n-nodes-langchain.agent',
+            typeVersion: 1.7,
+            position,
+            parameters: {
+              promptType: 'define',
+              text: '={{ $json.response || $json.body || JSON.stringify($json) }}',
+              options: { systemMessage: step.description || step.title || step.action || '' },
+            },
+          });
+          nodes.push({
+            id: `node_${idx + 1}_model`,
+            name: modelNodeName,
+            type: isAnthropic ? '@n8n/n8n-nodes-langchain.lmChatAnthropic' : '@n8n/n8n-nodes-langchain.lmChatOpenAi',
+            typeVersion: 1,
+            position: [position[0], position[1] + 200],
+            parameters: {
+              model: { value: isAnthropic ? 'claude-3-5-sonnet-20241022' : 'gpt-4o', mode: 'list' },
+              options: {},
+            },
+          });
+          addConnection(modelNodeName, nodeName, 'ai_languageModel');
+
+          if (connectFrom) addConnection(connectFrom, nodeName, 'main', connectBranch);
+          primaryName = nodeName;
+        } else {
+          const nodeId = `node_${idx + 1}_${idx}`;
+          nodes.push({
+            id:          nodeId,
+            name:        nodeName,
+            type:        nodeConfig.type,
+            typeVersion: nodeConfig.typeVersion,
+            position,
+            parameters:  { ...nodeConfig.parameters },
+          });
+
+          if (connectFrom) addConnection(connectFrom, nodeName, 'main', connectBranch);
+          primaryName = nodeName;
+        }
       }
 
-      nodes.push({
-        id: `node_${index + 1}_agent`,
-        name: nodeName,
-        type: '@n8n/n8n-nodes-langchain.agent',
-        typeVersion: 1.7,
-        position,
-        parameters: {
-          promptType: 'define',
-          text: '={{ $json.response || $json.body || JSON.stringify($json) }}',
-          options: { systemMessage: step.description || step.title || step.action || '' },
-        },
-      });
-      nodes.push({
-        id: `node_${index + 1}_model`,
-        name: modelNodeName,
-        type: isAnthropic ? '@n8n/n8n-nodes-langchain.lmChatAnthropic' : '@n8n/n8n-nodes-langchain.lmChatOpenAi',
-        typeVersion: 1,
-        position: [position[0], position[1] + 200],
-        parameters: {
-          model: { value: isAnthropic ? 'claude-3-5-sonnet-20241022' : 'gpt-4o', mode: 'list' },
-          options: {},
-        },
-      });
-      addConnection(modelNodeName, nodeName, 'ai_languageModel');
-
-      if (mainFlowNames.length) addConnection(mainFlowNames[mainFlowNames.length - 1], nodeName, 'main');
-      mainFlowNames.push(nodeName);
+      prevNodeName    = primaryName;
+      prevBranchIndex = 0;
       prevDetectedIntent = detectedIntent;
-      return;
-    }
 
-    const nodeId = `node_${index + 1}_${index}`;
-    nodes.push({
-      id:          nodeId,
-      name:        nodeName,
-      type:        nodeConfig.type,
-      typeVersion: nodeConfig.typeVersion,
-      position,
-      parameters:  { ...nodeConfig.parameters },
+      if (hasBranches && step.type !== 'loop') {
+        // Condition/switch — every branch's tail feeds into a shared join
+        // node (n8n-nodes-base.noOp) before the outer chain resumes.
+        const joinName = `${primaryName} · join`;
+        nodes.push({
+          id: `node_join_${nodeSeq++}`,
+          name: joinName,
+          type: 'n8n-nodes-base.noOp',
+          typeVersion: 1,
+          position: [START_X + (nodeSeq * GRID_X), START_Y + 260],
+          parameters: {},
+        });
+        step.branches.forEach((branch, branchIdx) => {
+          if (!branch.steps || !branch.steps.length) return; // unconnected output — no-op branch
+          const branchTail = convertSteps(branch.steps, primaryName, branchIdx);
+          addConnection(branchTail, joinName, 'main');
+        });
+        prevNodeName = joinName;
+      } else if (hasBranches && step.type === 'loop') {
+        // Loop body recursively converted off the "loop" output; its tail
+        // wires back into the loop node itself (the cyclic back-edge n8n's
+        // Split In Batches expects). The outer chain resumes from the loop
+        // node's "done" output.
+        const body = step.branches[0];
+        if (body && body.steps && body.steps.length) {
+          const bodyTail = convertSteps(body.steps, primaryName, LOOP_BODY_OUTPUT);
+          addConnection(bodyTail, primaryName, 'main');
+        }
+        prevBranchIndex = LOOP_DONE_OUTPUT;
+      }
     });
 
-    if (mainFlowNames.length) addConnection(mainFlowNames[mainFlowNames.length - 1], nodeName, 'main');
-    mainFlowNames.push(nodeName);
-    prevDetectedIntent = detectedIntent;
-  });
+    return prevNodeName;
+  }
+
+  convertSteps(steps, null, 0);
 
   return {
     name:        intent || `Aivory Workflow ${draftId}`,
@@ -735,7 +893,11 @@ async function n8nRunWorkflow(workflowId, workflowData, cookie) {
 
 async function n8nPollExecution(executionId, cookie) {
   const n8nHost  = process.env.N8N_HOST || 'http://localhost:5678';
-  const deadline = Date.now() + 30000;
+  // Bumped from the original 30s (Stage B7) — a splitInBatches loop body now
+  // actually executes for real in the sandbox (see CORE_SANDBOX_TYPES above),
+  // and a multi-iteration loop can outrun a single 30s window even on a
+  // small test batch.
+  const deadline = Date.now() + 60000;
   while (Date.now() < deadline) {
     const res  = await fetch(`${n8nHost}/rest/executions/${executionId}`, {
       headers: { 'Cookie': cookie },
@@ -756,7 +918,7 @@ async function n8nPollExecution(executionId, cookie) {
     if (exec?.finished === true) return exec;
     await new Promise(r => setTimeout(r, 1000));
   }
-  throw new Error('Timeout: execution did not finish in 30 seconds');
+  throw new Error('Timeout: execution did not finish in 60 seconds');
 }
 
 function deserializeN8nRunData(dataStr) {
@@ -803,6 +965,9 @@ function stripCredentialsForSandbox(workflowDef) {
     'n8n-nodes-base.noOp',
     'n8n-nodes-base.filter',
     'n8n-nodes-base.code',
+    // Real execution, not stubbed — loop bodies need to actually iterate for
+    // a sandbox test to prove the flow's structure (Stage B7).
+    'n8n-nodes-base.splitInBatches',
   ]);
 
   wf.nodes = wf.nodes.map(node => {
