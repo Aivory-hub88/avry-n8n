@@ -13,25 +13,6 @@ const DRAFTS_DIR = path.join(WORKFLOW_STORE, 'drafts');
 const N8N_HOST = (process.env.N8N_HOST || 'http://localhost:5678').replace(/\/$/, '');
 const N8N_API_KEY = process.env.N8N_API_KEY || '';
 
-// Structured JSON logging
-const logInfo = (data) => {
-  console.log(JSON.stringify({
-    level: 'info',
-    service: 'n8n-as-code-service',
-    ts: new Date().toISOString(),
-    ...data,
-  }));
-};
-
-const logError = (data) => {
-  console.error(JSON.stringify({
-    level: 'error',
-    service: 'n8n-as-code-service',
-    ts: new Date().toISOString(),
-    ...data,
-  }));
-};
-
 function loadEnvFile(filePath) {
   if (!fs.existsSync(filePath)) return;
   const lines = fs.readFileSync(filePath, 'utf8').split(/\r?\n/);
@@ -78,9 +59,24 @@ function normalizeSteps(steps) {
     typeVersion: step.typeVersion || null,
     config: step.config || {},
     n8nInspection: step.n8nInspection || null,
+    // Nested branch containers — only present for 'condition'|'switch'|'loop'
+    // steps (see frontend/avry-user-dashboard/lib/workflows/copilotStateMachine.ts's
+    // GeneratedWorkflowStep). Recursively normalized so buildRealN8nWorkflow()
+    // sees the same shape at every nesting depth.
+    ...(Array.isArray(step.branches) && step.branches.length
+      ? {
+          branches: step.branches.map((b) => ({
+            key: b.key,
+            label: b.label,
+            steps: normalizeSteps(b.steps),
+          })),
+        }
+      : {}),
+    ...(step.loopConfig ? { loopConfig: step.loopConfig } : {}),
   }));
 }
 
+function validateWorkflowSpecV1(body) {  if (!body || typeof body !== 'object') {    return { valid: false, error: 'Request body must be an object' };  }  const { steps } = body;  if (!Array.isArray(steps) || steps.length === 0) {    return { valid: false, error: 'steps must be a non-empty array' };  }  for (let i = 0; i < steps.length; i++) {    const step = steps[i];    if (!step.nodeType || typeof step.nodeType !== 'string') {      return { valid: false, error: `Step ${i + 1}: nodeType is required and must be a string` };    }    if (!step.parameters || typeof step.parameters !== 'object') {      return { valid: false, error: `Step ${i + 1}: parameters is required and must be an object` };    }    if (!step.title && !step.action) {      return { valid: false, error: `Step ${i + 1}: title or action is required` };    }  }  return { valid: true };}
 function buildWorkflowCode({ draftId, intent, steps, config }) {
   const payload = {
     draftId,
@@ -161,7 +157,28 @@ const NODE_TYPE_MAP = {
   messaging: {
     type: 'n8n-nodes-base.slack',
     typeVersion: 2.2,
-    parameters: { operation: 'message', channel: '', text: '' },
+    parameters: { resource: 'message', operation: 'send', channel: '', text: '' },
+  },
+  rss: {
+    type: 'n8n-nodes-base.rssFeedRead',
+    typeVersion: 1.1,
+    parameters: { url: '' },
+  },
+  gmail: {
+    type: 'n8n-nodes-base.gmail',
+    typeVersion: 2.1,
+    parameters: { resource: 'message', operation: 'send', sendTo: '', subject: '', message: '' },
+  },
+  openai: {
+    type: 'n8n-nodes-base.openAi',
+    typeVersion: 1.3,
+    parameters: {
+      resource: 'text',
+      operation: 'message',
+      modelId: { value: 'gpt-4o', mode: 'list' },
+      messages: { values: [{ content: '', role: 'user' }] },
+      options: {},
+    },
   },
   respond: {
     type: 'n8n-nodes-base.respondToWebhook',
@@ -199,9 +216,12 @@ function detectIntent(stepTitle, stepType, stepDescription) {
   const text = `${stepTitle} ${stepType} ${stepDescription || ''}`.toLowerCase();
 
   const PATTERNS = {
+    rss:       /\brss\b|\bfeed\b/,
+    gmail:     /gmail/,
     schedule:  /schedule|cron|daily|hourly|weekly|timer|interval|every\s+\d|jadwal|setiap|berkala|per\s*\d+\s*jam|tiap/,
     email:     /email|mail\b|smtp|inbox|send.*mail/,
     database:  /mysql|postgres|postgresql|sql\b|database|db\b|query|select|insert/,
+    openai:    /openai|open\s*ai|\bgpt-?\d/,
     http:      /\bhttp\b|\bapi\b|request\b|fetch\b|call.*endpoint|rest\b|post.*url|get.*url/,
     ssh:       /\bssh\b|\bscp\b|\bexec\b|remote.*command|run.*command|shell\b/,
     ftp:       /ftp|sftp|file.*transfer|upload.*file|download.*file/,
@@ -253,50 +273,258 @@ function buildRealN8nWorkflow({ draftId, intent, steps }) {
     };
   }
 
-  // Build nodes from steps
-  steps.forEach((step, index) => {
-    // Use nodeType from step if provided (from ZeroClaw/n8n MCP inspection)
-    // Fall back to detectIntent only if nodeType is not available
-    let nodeConfig;
-    let intent;
-    if (step.nodeType) {
-      // Direct n8n node type provided — use it directly
-      nodeConfig = {
-        type: step.nodeType,
-        typeVersion: step.typeVersion || 1,
-        parameters: step.parameters || {},
-      };
-      intent = 'direct';
-    } else {
-      intent = detectIntent(
-        step.title || step.action || '',
-        step.type  || '',
-        step.description || ''
-      );
-      nodeConfig = NODE_TYPE_MAP[intent] || NODE_TYPE_MAP.default;
-    }
-    const nodeName   = step.title || `Step ${index + 1}`;
-    const nodeId     = `node_${index + 1}_${intent}`;
+  // Intents whose node can return multiple items — when immediately followed
+  // by an AI step, a Limit node goes in between so the agent runs once per
+  // batch instead of once per item.
+  const MULTI_ITEM_INTENTS = new Set(['rss', 'http', 'database']);
 
-    nodes.push({
-      id:          nodeId,
-      name:        nodeName,
-      type:        nodeConfig.type,
-      typeVersion: nodeConfig.typeVersion,
-      position:    [START_X + (index * GRID_X), START_Y],
-      parameters:  { ...nodeConfig.parameters },
-    });
-  });
+  // n8n-nodes-base.splitInBatches output convention — same as
+  // frontend/avry-user-dashboard/lib/workflowConverter.ts's LOOP_DONE_OUTPUT/
+  // LOOP_BODY_OUTPUT: output 0 fires once after all batches are done, output
+  // 1 fires once per batch and is where the loop body connects. Confirmed
+  // against this VPS's real n8n instance right after this file was deployed
+  // (a trigger->loop->body->finish sandbox test executed end to end).
+  const LOOP_DONE_OUTPUT = 0;
+  const LOOP_BODY_OUTPUT = 1;
 
-  // Auto-wire connections: each node output → next node input
-  for (let i = 0; i < nodes.length - 1; i++) {
-    const fromName = nodes[i].name;
-    const toName   = nodes[i + 1].name;
+  // `branchIndex` selects which of the source's n8n outputs this connection
+  // comes from — always 0 (the only output) for a plain node; only
+  // condition/switch/loop primaries have more than one.
+  const addConnection = (from, to, type = 'main', branchIndex = 0) => {
+    if (!connections[from]) connections[from] = {};
+    if (!connections[from][type]) connections[from][type] = [];
+    while (connections[from][type].length <= branchIndex) connections[from][type].push([]);
+    connections[from][type][branchIndex].push({ node: to, type, index: 0 });
+  };
 
-    connections[fromName] = {
-      main: [[{ node: toName, type: 'main', index: 0 }]],
+  // `nodeSeq` is a running counter across the WHOLE recursive walk (not just
+  // one steps array) so node ids/positions stay unique once branches/loop
+  // bodies are nested — mirrors the frontend's globalStepCounter.
+  let nodeSeq = 0;
+
+  function buildLoopNode(step) {
+    const idx = nodeSeq++;
+    const position = [START_X + (idx * GRID_X), START_Y];
+    return {
+      id: `node_${idx + 1}_loop`,
+      name: step.title || `Step ${idx + 1}`,
+      type: 'n8n-nodes-base.splitInBatches',
+      typeVersion: 3,
+      position,
+      parameters: { batchSize: (step.loopConfig && step.loopConfig.batchSize) || 1, options: {} },
     };
   }
+
+  function buildSwitchNode(step) {
+    const idx = nodeSeq++;
+    const position = [START_X + (idx * GRID_X), START_Y];
+    return {
+      id: `node_${idx + 1}_switch`,
+      name: step.title || `Step ${idx + 1}`,
+      type: 'n8n-nodes-base.switch',
+      typeVersion: 3,
+      position,
+      parameters: {
+        mode: 'rules',
+        rules: {
+          values: step.branches.map((b) => ({
+            conditions: {
+              options: { caseSensitive: true, leftValue: '', typeValidation: 'strict' },
+              conditions: [
+                { leftValue: '={{ $json.response }}', rightValue: b.key, operator: { type: 'string', operation: 'equals' } },
+              ],
+              combinator: 'and',
+            },
+            renameOutput: true,
+            outputKey: b.label || b.key,
+          })),
+        },
+        options: { fallbackOutput: 'none' },
+      },
+    };
+  }
+
+  function buildConditionNode(step) {
+    const idx = nodeSeq++;
+    const position = [START_X + (idx * GRID_X), START_Y];
+    // Plain if-node scaffold — 2 fixed outputs (true=0/false=1), matching
+    // branches[0]/branches[1] by array position. Same placeholder condition
+    // as NODE_TYPE_MAP.filter; the user fills in the real field later.
+    return {
+      id: `node_${idx + 1}_if`,
+      name: step.title || `Step ${idx + 1}`,
+      type: 'n8n-nodes-base.if',
+      typeVersion: 2,
+      position,
+      parameters: { conditions: { options: {}, conditions: [] } },
+    };
+  }
+
+  /**
+   * Recursively convert a step array, wiring each step's primary node from
+   * `entryNodeName`'s `entryBranchIndex`-th output (only meaningful for the
+   * very first step in `stepList`). `entryNodeName` is `null` at the very
+   * top level — this file never synthesizes a trigger node of its own, the
+   * first step IS the trigger and gets no incoming connection, matching the
+   * pre-existing (pre-branch/loop) behavior of this function. Returns the
+   * tail node name a caller should continue its own chain from.
+   */
+  function convertSteps(stepList, entryNodeName, entryBranchIndex) {
+    let prevNodeName    = entryNodeName;
+    let prevBranchIndex = entryBranchIndex;
+    let prevDetectedIntent = null;
+
+    stepList.forEach((step, i) => {
+      const hasBranches = !!(step.branches && step.branches.length);
+      let primaryName;
+      let detectedIntent = null;
+
+      let connectFrom   = prevNodeName;
+      let connectBranch = i === 0 ? prevBranchIndex : 0;
+
+      if (hasBranches && step.type === 'switch') {
+        const node = buildSwitchNode(step);
+        nodes.push(node);
+        if (connectFrom) addConnection(connectFrom, node.name, 'main', connectBranch);
+        primaryName = node.name;
+      } else if (hasBranches && step.type === 'loop') {
+        const node = buildLoopNode(step);
+        nodes.push(node);
+        if (connectFrom) addConnection(connectFrom, node.name, 'main', connectBranch);
+        primaryName = node.name;
+      } else if (hasBranches) {
+        const node = buildConditionNode(step);
+        nodes.push(node);
+        if (connectFrom) addConnection(connectFrom, node.name, 'main', connectBranch);
+        primaryName = node.name;
+      } else {
+        // Use nodeType from step if provided (from ZeroClaw/n8n MCP inspection)
+        // Fall back to detectIntent only if nodeType is not available
+        let nodeConfig;
+        if (step.nodeType) {
+          nodeConfig = {
+            type: step.nodeType,
+            typeVersion: step.typeVersion || 1,
+            parameters: step.parameters || {},
+          };
+          detectedIntent = 'direct';
+        } else {
+          detectedIntent = detectIntent(
+            step.title || step.action || '',
+            step.type  || '',
+            step.description || ''
+          );
+          nodeConfig = NODE_TYPE_MAP[detectedIntent] || NODE_TYPE_MAP.default;
+        }
+        const idx = nodeSeq++;
+        const nodeName = step.title || `Step ${idx + 1}`;
+        const position = [START_X + (idx * GRID_X), START_Y];
+
+        // AI steps deploy as a native AI Agent node + a linked Chat Model
+        // sub-node (ai_languageModel connection) instead of a single generic
+        // node — mirrors frontend/avry-user-dashboard's nodeMapper.ts.
+        if (detectedIntent === 'ai' || detectedIntent === 'openai') {
+          const isAnthropic = /claude|anthropic/i.test(`${step.title || ''} ${step.action || ''} ${step.description || ''}`);
+          const modelNodeName = `${isAnthropic ? 'Anthropic' : 'OpenAI'} Chat Model${idx > 0 ? ` ${idx}` : ''}`;
+
+          if (connectFrom && prevDetectedIntent && MULTI_ITEM_INTENTS.has(prevDetectedIntent)) {
+            const limitName = `Limit ${idx}`;
+            nodes.push({
+              id: `node_${idx + 1}_limit`,
+              name: limitName,
+              type: 'n8n-nodes-base.limit',
+              typeVersion: 1,
+              position: [position[0] - 90, position[1]],
+              parameters: { maxItems: 1 },
+            });
+            addConnection(connectFrom, limitName, 'main', connectBranch);
+            connectFrom = limitName;
+            connectBranch = 0;
+          }
+
+          nodes.push({
+            id: `node_${idx + 1}_agent`,
+            name: nodeName,
+            type: '@n8n/n8n-nodes-langchain.agent',
+            typeVersion: 1.7,
+            position,
+            parameters: {
+              promptType: 'define',
+              text: '={{ $json.response || $json.body || JSON.stringify($json) }}',
+              options: { systemMessage: step.description || step.title || step.action || '' },
+            },
+          });
+          nodes.push({
+            id: `node_${idx + 1}_model`,
+            name: modelNodeName,
+            type: isAnthropic ? '@n8n/n8n-nodes-langchain.lmChatAnthropic' : '@n8n/n8n-nodes-langchain.lmChatOpenAi',
+            typeVersion: 1,
+            position: [position[0], position[1] + 200],
+            parameters: {
+              model: { value: isAnthropic ? 'claude-3-5-sonnet-20241022' : 'gpt-4o', mode: 'list' },
+              options: {},
+            },
+          });
+          addConnection(modelNodeName, nodeName, 'ai_languageModel');
+
+          if (connectFrom) addConnection(connectFrom, nodeName, 'main', connectBranch);
+          primaryName = nodeName;
+        } else {
+          const nodeId = `node_${idx + 1}_${idx}`;
+          nodes.push({
+            id:          nodeId,
+            name:        nodeName,
+            type:        nodeConfig.type,
+            typeVersion: nodeConfig.typeVersion,
+            position,
+            parameters:  { ...nodeConfig.parameters },
+          });
+
+          if (connectFrom) addConnection(connectFrom, nodeName, 'main', connectBranch);
+          primaryName = nodeName;
+        }
+      }
+
+      prevNodeName    = primaryName;
+      prevBranchIndex = 0;
+      prevDetectedIntent = detectedIntent;
+
+      if (hasBranches && step.type !== 'loop') {
+        // Condition/switch — every branch's tail feeds into a shared join
+        // node (n8n-nodes-base.noOp) before the outer chain resumes.
+        const joinName = `${primaryName} · join`;
+        nodes.push({
+          id: `node_join_${nodeSeq++}`,
+          name: joinName,
+          type: 'n8n-nodes-base.noOp',
+          typeVersion: 1,
+          position: [START_X + (nodeSeq * GRID_X), START_Y + 260],
+          parameters: {},
+        });
+        step.branches.forEach((branch, branchIdx) => {
+          if (!branch.steps || !branch.steps.length) return; // unconnected output — no-op branch
+          const branchTail = convertSteps(branch.steps, primaryName, branchIdx);
+          addConnection(branchTail, joinName, 'main');
+        });
+        prevNodeName = joinName;
+      } else if (hasBranches && step.type === 'loop') {
+        // Loop body recursively converted off the "loop" output; its tail
+        // wires back into the loop node itself (the cyclic back-edge n8n's
+        // Split In Batches expects). The outer chain resumes from the loop
+        // node's "done" output.
+        const body = step.branches[0];
+        if (body && body.steps && body.steps.length) {
+          const bodyTail = convertSteps(body.steps, primaryName, LOOP_BODY_OUTPUT);
+          addConnection(bodyTail, primaryName, 'main');
+        }
+        prevBranchIndex = LOOP_DONE_OUTPUT;
+      }
+    });
+
+    return prevNodeName;
+  }
+
+  convertSteps(steps, null, 0);
 
   return {
     name:        intent || `Aivory Workflow ${draftId}`,
@@ -449,27 +677,12 @@ app.get('/health', (req, res) => {
 app.post('/drafts/build', (req, res) => {
   try {
     const { session_id, draft_id, intent, steps, config } = req.body || {};
-    
-    logInfo({ event: 'request', path: '/drafts/build', session_id });
-    
     const normalizedSteps = normalizeSteps(steps);
     if (!intent || typeof intent !== 'string') {
-      return res.status(400).json({
-        error: {
-          code: 'INVALID_WORKFLOW_SPEC',
-          message: 'intent is required',
-          source: 'n8n-as-code-service'
-        }
-      });
+      return res.status(400).json({ error: true, message: 'intent is required' });
     }
     if (normalizedSteps.length === 0) {
-      return res.status(400).json({
-        error: {
-          code: 'INVALID_WORKFLOW_SPEC',
-          message: 'steps must be a non-empty array',
-          source: 'n8n-as-code-service'
-        }
-      });
+      return res.status(400).json({ error: true, message: 'steps must be a non-empty array' });
     }
 
     ensureDraftsDir();
@@ -494,8 +707,6 @@ app.post('/drafts/build', (req, res) => {
     }));
     writeMeta(resolvedDraftId, meta);
 
-    logInfo({ event: 'success', path: '/drafts/build', status: 'ok', draftId: resolvedDraftId });
-
     res.json({
       draft_id: resolvedDraftId,
       workflow_code_path: workflowPath,
@@ -503,11 +714,6 @@ app.post('/drafts/build', (req, res) => {
       state: 'draft_created',
     });
   } catch (error) {
-    logError({
-      event: 'error',
-      path: '/drafts/build',
-      error_message: error.message
-    });
     res.status(error.status || 500).json({ error: true, message: error.message });
   }
 });
@@ -650,7 +856,12 @@ async function n8nFetchWorkflow(workflowId) {
   return res.json();
 }
 
-async function n8nRunWorkflow(workflowId, workflowData, cookie) {
+// `pinData` here is a defensive pass-through, not the mechanism that
+// actually pins anything on this n8n version — confirmed by direct
+// experiment (Stage C4) that pinning only takes effect when persisted on
+// the workflow definition at creation time (see runSandboxTest()'s create
+// call). Kept here too in case a different n8n version does honor it.
+async function n8nRunWorkflow(workflowId, workflowData, cookie, pinData = {}) {
   const n8nHost = process.env.N8N_HOST || 'http://localhost:5678';
   const nodes   = workflowData.nodes || [];
   
@@ -675,7 +886,7 @@ async function n8nRunWorkflow(workflowId, workflowData, cookie) {
       startNodes:      [trigger?.name || 'Manual Trigger'],
       destinationNode: '',
       runData:         null,
-      pinData:         {},
+      pinData,
       workflowData:    workflowData,
     }),
   });
@@ -688,7 +899,11 @@ async function n8nRunWorkflow(workflowId, workflowData, cookie) {
 
 async function n8nPollExecution(executionId, cookie) {
   const n8nHost  = process.env.N8N_HOST || 'http://localhost:5678';
-  const deadline = Date.now() + 30000;
+  // Bumped from the original 30s (Stage B7) — a splitInBatches loop body now
+  // actually executes for real in the sandbox (see CORE_SANDBOX_TYPES above),
+  // and a multi-iteration loop can outrun a single 30s window even on a
+  // small test batch.
+  const deadline = Date.now() + 60000;
   while (Date.now() < deadline) {
     const res  = await fetch(`${n8nHost}/rest/executions/${executionId}`, {
       headers: { 'Cookie': cookie },
@@ -709,7 +924,7 @@ async function n8nPollExecution(executionId, cookie) {
     if (exec?.finished === true) return exec;
     await new Promise(r => setTimeout(r, 1000));
   }
-  throw new Error('Timeout: execution did not finish in 30 seconds');
+  throw new Error('Timeout: execution did not finish in 60 seconds');
 }
 
 function deserializeN8nRunData(dataStr) {
@@ -737,31 +952,105 @@ function deserializeN8nRunData(dataStr) {
   } catch { return null; }
 }
 
+/**
+ * True offline replay (Stage C4) — turns a captured fixture's raw execution
+ * data into n8n's real `pinData` shape ({[nodeName]: [{json:{...}}, ...]})
+ * so n8nRunWorkflow() can pin it onto matching node names: n8n then skips
+ * re-executing those nodes for real and feeds their pinned output straight
+ * downstream, instead of a fully-live run (Stage C3's "live re-run
+ * comparison" already covers the fully-live case).
+ *
+ * Input is the PLAIN nested JSON shape n8n's public `/api/v1/executions/:id
+ * ?includeData=true` returns (what frontend/avry-user-dashboard's
+ * getExecutionDetailWithCreds() fetches and dashboard.workflow_fixtures
+ * stores as run_data) — NOT the "flatted" reference-array format
+ * deserializeN8nRunData() above parses, which is specific to n8n's internal
+ * `/rest/executions/:id` polling response. Mirrors
+ * frontend/avry-user-dashboard/lib/workflows/fixtureDiff.ts's
+ * extractRunData() for the same reason: two different n8n endpoints, two
+ * different serializations of the same underlying data.
+ */
+function buildPinDataFromFixtureRunData(fixtureRunData) {
+  const pinData = {};
+  if (!fixtureRunData || typeof fixtureRunData !== 'object') return pinData;
+
+  const resultData = fixtureRunData.resultData || fixtureRunData;
+  const runData     = resultData.runData || fixtureRunData.runData;
+  if (!runData || typeof runData !== 'object') return pinData;
+
+  for (const [nodeName, runs] of Object.entries(runData)) {
+    if (!Array.isArray(runs) || runs.length === 0) continue;
+    const lastRun = runs[runs.length - 1];
+    const items   = lastRun?.data?.main?.[0];
+    if (!Array.isArray(items) || items.length === 0) continue;
+    // Items are already {json:{...}} envelopes — keep only `json` (and
+    // `binary` if present), dropping execution-time metadata like
+    // `pairedItem` indices that won't resolve against a different run.
+    pinData[nodeName] = items.map((item) => ({
+      json: item?.json ?? {},
+      ...(item?.binary ? { binary: item.binary } : {}),
+    }));
+  }
+  return pinData;
+}
+
 function stripCredentialsForSandbox(workflowDef) {
   // Deep clone
   const wf = JSON.parse(JSON.stringify(workflowDef));
 
-  // Nodes that need credential stripping — replace with Set node
-  // so n8n can execute without credential errors
-  const CREDENTIAL_NODE_TYPES = [
-    'n8n-nodes-base.mySql',
-    'n8n-nodes-base.postgres',
-    'n8n-nodes-base.emailSend',
-    'n8n-nodes-base.ssh',
-    'n8n-nodes-base.ftp',
-    'n8n-nodes-base.slack',
-    'n8n-nodes-base.notion',
-    'n8n-nodes-base.googleSheets',
-  ];
+  // Only core structural nodes execute for real in the sandbox — every
+  // integration node (Slack, HubSpot, Zendesk, ...) is stubbed with a Set
+  // node. The old approach blacklisted 8 specific credential node types;
+  // any integration outside that list (e.g. HubSpot) ran for real, hit
+  // "required parameter" / credential errors, and failed the whole test.
+  // The sandbox validates flow structure, not third-party API calls.
+  const CORE_SANDBOX_TYPES = new Set([
+    'n8n-nodes-base.manualTrigger',
+    'n8n-nodes-base.set',
+    'n8n-nodes-base.if',
+    'n8n-nodes-base.switch',
+    'n8n-nodes-base.merge',
+    'n8n-nodes-base.noOp',
+    'n8n-nodes-base.filter',
+    'n8n-nodes-base.code',
+    // Real execution, not stubbed — loop bodies need to actually iterate for
+    // a sandbox test to prove the flow's structure (Stage B7).
+    'n8n-nodes-base.splitInBatches',
+  ]);
 
   wf.nodes = wf.nodes.map(node => {
     // Remove any credential fields
     const stripped = { ...node };
     delete stripped.credentials;
 
-    // If node requires credentials, swap to a harmless Set node
-    // that proves the logic flow works without credential errors
-    if (CREDENTIAL_NODE_TYPES.includes(node.type)) {
+    // Non-manual trigger nodes (webhook, app event triggers) cannot start a
+    // manual /rest/.../run execution — n8n rejects the run with "No node to
+    // start the workflow from could be found", which made EVERY sandbox test
+    // fail. Swap them for a Manual Trigger, preserving id/name/position so
+    // the workflow connections stay intact.
+    const loweredType = (node.type || '').toLowerCase();
+    const isNonManualTrigger =
+      (loweredType.includes('trigger') && loweredType !== 'n8n-nodes-base.manualtrigger') ||
+      loweredType === 'n8n-nodes-base.webhook' ||
+      // Trigger types whose names lack the word "trigger" (static-fallback
+      // node resolution emits these) — without this they get stubbed as Set
+      // nodes and the workflow has no start node at all.
+      loweredType === 'n8n-nodes-base.cron' ||
+      loweredType === 'n8n-nodes-base.interval';
+    if (isNonManualTrigger) {
+      return {
+        id:          stripped.id,
+        name:        stripped.name,
+        type:        'n8n-nodes-base.manualTrigger',
+        typeVersion: 1,
+        position:    stripped.position,
+        parameters:  {},
+      };
+    }
+
+    // Any non-core node is swapped to a harmless Set node that proves the
+    // logic flow works without credential/parameter errors
+    if (!CORE_SANDBOX_TYPES.has(stripped.type)) {
       return {
         id:          stripped.id,
         name:        stripped.name,
@@ -788,12 +1077,14 @@ function stripCredentialsForSandbox(workflowDef) {
   return wf;
 }
 
-async function runSandboxTest(workflowDefinition) {
+async function runSandboxTest(workflowDefinition, pinData = {}) {
   const n8nHost = process.env.N8N_HOST    || 'http://localhost:5678';
   const apiKey  = process.env.N8N_API_KEY || '';
   const logs    = [];
   let   wfId    = null;
   const log     = m => { logs.push(m); console.log(`[sandbox] ${m}`); };
+  const isReplay = Object.keys(pinData).length > 0;
+  if (isReplay) log(`Offline replay: pinning ${Object.keys(pinData).length} node(s) from fixture data`);
 
   try {
     log('Creating sandbox workflow...');
@@ -807,6 +1098,15 @@ async function runSandboxTest(workflowDefinition) {
       body: JSON.stringify({
         ...sandboxWorkflow,
         settings: { ...(sandboxWorkflow.settings ?? {}), executionOrder: 'v1' },
+        // True offline replay (Stage C4) — confirmed by direct experiment
+        // against this VPS's real n8n that pinData ONLY takes effect when
+        // persisted on the workflow definition itself (this create call).
+        // Passing it as a parameter to /rest/workflows/:id/run (what
+        // n8nRunWorkflow() below still does, harmlessly) is a no-op on this
+        // n8n version — the plan's original description of that hook was
+        // wrong about WHERE pinData needs to go, not whether the mechanism
+        // exists at all.
+        ...(isReplay ? { pinData } : {}),
       }),
     });
     if (!cr.ok) throw new Error(`Create failed (${cr.status}): ${await cr.text()}`);
@@ -822,8 +1122,18 @@ async function runSandboxTest(workflowDefinition) {
     const wfData = await n8nFetchWorkflow(wfId);
     log(`Fetched: ${wfData.nodes?.length} nodes`);
 
+    // Pinned node names come from whatever workflow the fixture was captured
+    // against — matched here purely by name (same convention fixtureDiff.ts
+    // uses), so warn (don't fail) when a pinned name doesn't exist in THIS
+    // workflow, e.g. after a step was renamed since the fixture was captured.
+    if (isReplay) {
+      const liveNodeNames = new Set((wfData.nodes || []).map(n => n.name));
+      const unmatched = Object.keys(pinData).filter(name => !liveNodeNames.has(name));
+      if (unmatched.length) log(`WARNING: fixture has data for node(s) not present in this workflow: ${unmatched.join(', ')}`);
+    }
+
     log('Triggering execution...');
-    const execId = await n8nRunWorkflow(wfId, wfData, cookie);
+    const execId = await n8nRunWorkflow(wfId, wfData, cookie, pinData);
     log(`Execution started: ${execId}`);
 
     log('Waiting for result (max 30s)...');
@@ -885,7 +1195,8 @@ async function runSandboxTest(workflowDefinition) {
     const passed = exec.status === 'success';
     return {
       status:         passed ? 'passed' : 'failed',
-      validationMode: 'real_execution',
+      validationMode: isReplay ? 'offline_replay' : 'real_execution',
+      ...(isReplay ? { pinnedNodes: Object.keys(pinData) } : {}),
       executionId:    execId,
       nodeResults:    annotatedResults,
       errors: annotatedResults
@@ -905,7 +1216,7 @@ async function runSandboxTest(workflowDefinition) {
       } catch (e) { log(`Emergency cleanup failed: ${e.message}`); }
     }
     return {
-      status: 'error', validationMode: 'real_execution',
+      status: 'error', validationMode: isReplay ? 'offline_replay' : 'real_execution',
       nodeResults: [], errors: [err.message], logs,
     };
   }
@@ -917,7 +1228,7 @@ async function runSandboxTest(workflowDefinition) {
 
 app.post('/drafts/test', async (req, res) => {
   try {
-    const { draft_id } = req.body || {};
+    const { draft_id, pin_from_run_data } = req.body || {};
     if (!draft_id) return res.status(400).json({ error: true, message: 'draft_id is required' });
 
     const meta = readMeta(draft_id);
@@ -927,7 +1238,15 @@ app.post('/drafts/test', async (req, res) => {
       steps: meta.steps,
     });
 
-    const result = await runSandboxTest(workflowDef);
+    // True offline replay (Stage C4) — opt-in only. Omitting
+    // pin_from_run_data keeps this route's existing fully-live behavior
+    // (Stage C3's "live re-run comparison" already covers that case, and
+    // this is also the path Stages B6/B7 verified against real n8n).
+    // pin_from_run_data is a captured fixture's raw run_data (the same
+    // shape dashboard.workflow_fixtures.run_data stores).
+    const pinData = pin_from_run_data ? buildPinDataFromFixtureRunData(pin_from_run_data) : {};
+
+    const result = await runSandboxTest(workflowDef, pinData);
 
     meta.status = result.status === 'passed' ? 'test_passed' : 'test_failed';
     meta.testResult = result;
@@ -985,18 +1304,7 @@ app.post('/drafts/bind-credentials', async (req, res) => {
 app.post('/drafts/deploy', async (req, res) => {
   try {
     const { draft_id, activate = true } = req.body || {};
-    
-    logInfo({ event: 'request', path: '/drafts/deploy', draft_id });
-    
-    if (!draft_id) {
-      return res.status(400).json({
-        error: {
-          code: 'INVALID_WORKFLOW_SPEC',
-          message: 'draft_id is required',
-          source: 'n8n-as-code-service'
-        }
-      });
-    }
+    if (!draft_id) return res.status(400).json({ error: true, message: 'draft_id is required' });
 
     const meta        = readMeta(draft_id);
     const workflowDef = buildRealN8nWorkflow({
@@ -1011,11 +1319,8 @@ app.post('/drafts/deploy', async (req, res) => {
 
     if (missing.length > 0) {
       return res.status(400).json({
-        error: {
-          code: 'INVALID_WORKFLOW_SPEC',
-          message: `Cannot deploy: ${missing.length} credential(s) missing`,
-          source: 'n8n-as-code-service'
-        },
+        error:   true,
+        message: `Cannot deploy: ${missing.length} credential(s) missing`,
         missing,
       });
     }
@@ -1067,15 +1372,6 @@ app.post('/drafts/deploy', async (req, res) => {
     meta.updatedAt = new Date().toISOString();
     writeMeta(draft_id, meta);
 
-    logInfo({ 
-      event: 'success', 
-      path: '/drafts/deploy', 
-      status: 'ok', 
-      draftId, 
-      workflowId,
-      activated 
-    });
-
     return res.json({
       draft_id,
       workflowId,
@@ -1087,11 +1383,6 @@ app.post('/drafts/deploy', async (req, res) => {
         : `Workflow deployed (not activated). Open: ${n8nHost}/workflow/${workflowId}`,
     });
   } catch (error) {
-    logError({
-      event: 'error',
-      path: '/drafts/deploy',
-      error_message: error.message
-    });
     res.status(error.status || 500).json({ error: true, message: error.message });
   }
 });
@@ -1121,7 +1412,6 @@ app.post('/drafts/cleanup', (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3500;
-app.listen(PORT, '127.0.0.1', () => {
-  console.log(`n8n-as-code adapter running on 127.0.0.1:${PORT}`);
+app.listen(3500, '127.0.0.1', () => {
+  console.log('n8n-as-code adapter running on 127.0.0.1:3500');
 });
