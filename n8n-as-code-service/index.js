@@ -1412,6 +1412,25 @@ app.post('/drafts/cleanup', (req, res) => {
   }
 });
 
+// POST /sandbox/validate — run a PRE-BUILT workflow JSON through the real
+// execution sandbox. Unlike /drafts/test (which rebuilds a draft's steps via
+// buildRealN8nWorkflow), this executes the exact workflow JSON the caller is
+// going to deploy — "test what you deploy". Used by the blueprint path, which
+// builds its n8n JSON in the dashboard frontend (workflowConverter.ts), not in
+// this service, so there is no draft to rebuild from.
+app.post('/sandbox/validate', async (req, res) => {
+  try {
+    const { workflow } = req.body || {};
+    if (!workflow || !Array.isArray(workflow.nodes) || workflow.nodes.length === 0) {
+      return res.status(400).json({ error: true, message: 'workflow (with a non-empty nodes array) is required' });
+    }
+    const result = await runSandboxTest(workflow);
+    return res.json(result);
+  } catch (error) {
+    res.status(error.status || 500).json({ status: 'error', errors: [error.message], logs: [error.message] });
+  }
+});
+
 app.listen(3500, '127.0.0.1', () => {
   console.log('n8n-as-code adapter running on 127.0.0.1:3500');
 });
