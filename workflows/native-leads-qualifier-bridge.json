@@ -1,0 +1,2733 @@
+{
+  "active": true,
+  "activeVersion": {
+    "authors": "Admin Aivory",
+    "autosaved": false,
+    "connections": {
+      "Check Bridge Secret": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Route By Action",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "Respond Unauthorized",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Format Enrichment Response": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Respond Success",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Format List Response": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Respond Success",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Format Pipeline Response": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Respond Success",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Format Success Response": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Respond Success",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "HTTP Hunter Email Finder": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Parse Hunter Result",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "HTTP Lusha Person Enrichment": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Parse Lusha Result",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "IF Hunter Found Email": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "PG Consume+Save Email",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "Merge After Email",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "IF Lusha Found Phone": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "PG Consume+Save Phone",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "Format Enrichment Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "IF Need Email": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "HTTP Hunter Email Finder",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "Merge After Email",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "IF Need Phone": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "HTTP Lusha Person Enrichment",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "Parse Lusha Result",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "IF Should Respond Early": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Respond Early",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "IF Need Email",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Merge After Email": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "IF Need Phone",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Native Leads Qualifier Webhook": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Check Bridge Secret",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Consume+Save Email": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Merge After Email",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Consume+Save Phone": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format Enrichment Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Create Lead": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format Success Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Get Lead": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format Success Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Get Lead+Wallet": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Plan Enrichment",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG List Leads": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format List Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Pipeline Summary": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format Pipeline Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Update BANT": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format Success Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Update Deal": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format Success Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Update Lead Stage": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format Success Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Parse Hunter Result": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "IF Hunter Found Email",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Parse Lusha Result": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "IF Lusha Found Phone",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Plan Enrichment": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "IF Should Respond Early",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Route By Action": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "PG Create Lead",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "PG List Leads",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "PG Get Lead",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "PG Update Lead Stage",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "PG Update BANT",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "PG Get Lead+Wallet",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "PG Update Deal",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "PG Pipeline Summary",
+              "type": "main"
+            }
+          ]
+        ]
+      }
+    },
+    "createdAt": "2026-08-30T08:25:18.122Z",
+    "description": null,
+    "name": null,
+    "nodeGroups": [],
+    "nodes": [
+      {
+        "id": "3339a6c8-2d7f-4830-9dc9-a2690bc17075",
+        "name": "Native Leads Qualifier Webhook",
+        "parameters": {
+          "authentication": "none",
+          "httpMethod": "POST",
+          "path": "native-leads-qualifier",
+          "responseMode": "responseNode"
+        },
+        "position": [
+          80,
+          400
+        ],
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "webhookId": "6548627e-c2cb-4dd5-9dee-1878754cd751"
+      },
+      {
+        "id": "0b63fa2f-8c75-49e3-991c-b034a761ce86",
+        "name": "Check Bridge Secret",
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.headers['x-bridge-secret'] }}",
+                "operator": {
+                  "operation": "equals",
+                  "type": "string"
+                },
+                "rightValue": "<<REDACTED:N8N_SHARED_SECRET>>"
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            }
+          }
+        },
+        "position": [
+          300,
+          400
+        ],
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2
+      },
+      {
+        "id": "a6457a77-7a3c-4d66-bef6-6abd127da04b",
+        "name": "Route By Action",
+        "parameters": {
+          "options": {
+            "fallbackOutput": "extra",
+            "renameFallbackOutput": "Unknown Action"
+          },
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "create_lead"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "create_lead"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "list_leads"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "list_leads"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "get_lead"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "get_lead"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "update_lead_stage"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "update_lead_stage"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "update_bant"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "update_bant"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "enrich_lead_contact"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "enrich_lead_contact"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "update_deal"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "update_deal"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "pipeline_summary"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "pipeline_summary"
+              }
+            ]
+          }
+        },
+        "position": [
+          520,
+          300
+        ],
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2
+      },
+      {
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "3825e6ea-124c-4b57-8d52-5291e59ddc96",
+        "name": "PG Create Lead",
+        "parameters": {
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "company": "={{ $json.body.company || '' }}",
+              "email": "={{ $json.body.email || '' }}",
+              "name": "={{ $json.body.name }}",
+              "tenant_id": "={{ $json.body.tenant_id }}"
+            }
+          },
+          "operation": "insert",
+          "resource": "database",
+          "schema": {
+            "__rl": true,
+            "mode": "list",
+            "value": "aivory_ops"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "list",
+            "value": "leads"
+          }
+        },
+        "position": [
+          780,
+          60
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "id": "cbf77226-249c-48af-8871-46feec0b9beb",
+        "name": "Format Success Response",
+        "parameters": {
+          "jsonOutput": "={{ $input.all().filter(i => i.json && i.json.id).length === 0 ? { \"success\": false, \"error\": \"Not found, or not accessible to this tenant.\" } : { \"success\": true, \"data\": $input.all().filter(i => i.json && i.json.id).map(i => i.json) } }}",
+          "mode": "raw"
+        },
+        "position": [
+          1040,
+          300
+        ],
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "523fc795-6d07-410c-866d-5992de50af61",
+        "name": "PG List Leads",
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ $json.body.tenant_id }},{{ $json.body.stage || 'all' }}"
+          },
+          "query": "SELECT id, name, company, email, stage, created_at FROM aivory_ops.leads WHERE tenant_id = $1 AND ($2 = 'all' OR stage = $2) ORDER BY created_at DESC LIMIT 50",
+          "resource": "database"
+        },
+        "position": [
+          780,
+          200
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "id": "5d4e1c82-bf45-4815-a3c1-f61e8c8a1211",
+        "name": "Format List Response",
+        "parameters": {
+          "jsonOutput": "={{ { \"success\": true, \"data\": $input.all().filter(i => i.json && i.json.id).map(i => i.json) } }}",
+          "mode": "raw"
+        },
+        "position": [
+          1040,
+          200
+        ],
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "40c78663-6c1e-483d-b513-aaa8b54d9c27",
+        "name": "PG Get Lead",
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ $json.body.lead_id }},{{ $json.body.tenant_id }}"
+          },
+          "query": "SELECT id, name, company, email, stage, bant_budget, bant_authority, bant_need, bant_timeline, notes, created_at, updated_at FROM aivory_ops.leads WHERE id = $1 AND tenant_id = $2",
+          "resource": "database"
+        },
+        "position": [
+          780,
+          340
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "05fc64c4-b146-4fc9-a005-b528ab3e0650",
+        "name": "PG Update Lead Stage",
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ $json.body.lead_id }},{{ $json.body.tenant_id }},{{ $json.body.stage }}"
+          },
+          "query": "UPDATE aivory_ops.leads SET stage=$3, updated_at=now() WHERE id=$1 AND tenant_id=$2 RETURNING id, stage",
+          "resource": "database"
+        },
+        "position": [
+          780,
+          480
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "17e8aefd-2e5c-414d-b401-6d6bbaa397d2",
+        "name": "PG Update BANT",
+        "onError": "continueRegularOutput",
+        "parameters": {
+          "columns": {
+            "mappingMode": "defineBelow",
+            "matchingColumns": [
+              "id",
+              "tenant_id"
+            ],
+            "value": {
+              "bant_authority": "={{ $json.body.bant_authority || '' }}",
+              "bant_budget": "={{ $json.body.bant_budget || '' }}",
+              "bant_need": "={{ $json.body.bant_need || '' }}",
+              "bant_timeline": "={{ $json.body.bant_timeline || '' }}",
+              "id": "={{ $json.body.lead_id }}",
+              "notes": "={{ $json.body.notes || '' }}",
+              "tenant_id": "={{ $json.body.tenant_id }}"
+            }
+          },
+          "operation": "update",
+          "resource": "database",
+          "schema": {
+            "__rl": true,
+            "mode": "list",
+            "value": "aivory_ops"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "list",
+            "value": "leads"
+          }
+        },
+        "position": [
+          780,
+          620
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "id": "9e056eaa-0b26-44fd-9315-cfaead5e4a18",
+        "name": "Respond Unknown Action",
+        "parameters": {
+          "options": {
+            "responseCode": 400
+          },
+          "respondWith": "json",
+          "responseBody": "={{ { \"error\": \"unknown action\" } }}"
+        },
+        "position": [
+          780,
+          760
+        ],
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5
+      },
+      {
+        "id": "4bf6afe8-e0cc-4c0e-a4d7-e5539cfc7a8c",
+        "name": "Respond Unauthorized",
+        "parameters": {
+          "options": {
+            "responseCode": 401
+          },
+          "respondWith": "json",
+          "responseBody": "={{ { \"error\": \"unauthorized\" } }}"
+        },
+        "position": [
+          520,
+          560
+        ],
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5
+      },
+      {
+        "id": "df273ecd-4907-485d-9383-9819a867d167",
+        "name": "Respond Success",
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}"
+        },
+        "position": [
+          1260,
+          300
+        ],
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "e1a1a1a1-0001-4000-8000-000000000001",
+        "name": "PG Get Lead+Wallet",
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ $json.body.lead_id }},{{ $json.body.tenant_id }}"
+          },
+          "query": "SELECT l.id, l.name, l.company, l.email, l.phone, l.website, l.tenant_id, COALESCE(w.balance_usd,0) AS balance_usd FROM aivory_ops.leads l LEFT JOIN aivory_ops.enrichment_wallet w ON w.tenant_id = l.tenant_id WHERE l.id = $1 AND l.tenant_id = $2",
+          "resource": "database"
+        },
+        "position": [
+          780,
+          900
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "id": "e1a1a1a1-0002-4000-8000-000000000002",
+        "name": "Plan Enrichment",
+        "parameters": {
+          "jsCode": "const body = $('Native Leads Qualifier Webhook').item.json.body;\nconst row = $json;\nif (!row || !row.id) {\n  return [{ json: { respond: 'not_found' } }];\n}\nconst fields = Array.isArray(body.fields) && body.fields.length ? body.fields : ['email','phone'];\nconst needEmail = fields.includes('email') && !row.email;\nconst needPhone = fields.includes('phone') && !row.phone;\nconst PRICE_EMAIL = 0.20;\nconst PRICE_PHONE = 2.00;\nconst cost = (needEmail ? PRICE_EMAIL : 0) + (needPhone ? PRICE_PHONE : 0);\nconst balance = Number(row.balance_usd || 0);\nif (cost > 0 && balance < cost) {\n  return [{ json: { respond: 'insufficient_balance', balance, required: cost } }];\n}\nreturn [{ json: {\n  respond: 'proceed', needEmail: needEmail ? 'yes' : 'no', needPhone: needPhone ? 'yes' : 'no', balance,\n  lead_id: row.id, tenant_id: row.tenant_id, name: row.name,\n  company: row.company || '', website: row.website || '', email: row.email || '', phone: row.phone || ''\n} }];\n",
+          "language": "javaScript"
+        },
+        "position": [
+          1000,
+          900
+        ],
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2
+      },
+      {
+        "id": "e1a1a1a1-0003-4000-8000-000000000003",
+        "name": "IF Should Respond Early",
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.respond }}",
+                "operator": {
+                  "operation": "notEquals",
+                  "type": "string"
+                },
+                "rightValue": "proceed"
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            }
+          }
+        },
+        "position": [
+          1220,
+          900
+        ],
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2
+      },
+      {
+        "id": "e1a1a1a1-0004-4000-8000-000000000004",
+        "name": "Respond Early",
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ { \"success\": false, \"error\": $json.respond, \"balance\": $json.balance, \"required\": $json.required } }}"
+        },
+        "position": [
+          1440,
+          820
+        ],
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5
+      },
+      {
+        "id": "e1a1a1a1-0005-4000-8000-000000000005",
+        "name": "IF Need Email",
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.needEmail }}",
+                "operator": {
+                  "operation": "equals",
+                  "type": "string"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            }
+          }
+        },
+        "position": [
+          1440,
+          980
+        ],
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "9EjOKdR0tc7HxXhq",
+            "name": "Hunter API Key"
+          }
+        },
+        "id": "e1a1a1a1-0006-4000-8000-000000000006",
+        "name": "HTTP Hunter Email Finder",
+        "onError": "continueRegularOutput",
+        "parameters": {
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "method": "GET",
+          "options": {
+            "timeout": 15000
+          },
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "domain",
+                "value": "={{ $json.website }}"
+              },
+              {
+                "name": "company",
+                "value": "={{ $json.website ? '' : $json.company }}"
+              },
+              {
+                "name": "first_name",
+                "value": "={{ ($json.name||'').trim().split(/\\s+/)[0] || '' }}"
+              },
+              {
+                "name": "last_name",
+                "value": "={{ (($json.name||'').trim().split(/\\s+/).slice(1).join(' ')) || '' }}"
+              }
+            ]
+          },
+          "sendQuery": true,
+          "url": "https://api.hunter.io/v2/email-finder"
+        },
+        "position": [
+          1660,
+          900
+        ],
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2
+      },
+      {
+        "id": "e1a1a1a1-0007-4000-8000-000000000007",
+        "name": "Parse Hunter Result",
+        "parameters": {
+          "jsCode": "const plan = $('Plan Enrichment').item.json;\nconst resp = $json;\nconst found = resp && resp.data && resp.data.email ? resp.data.email : null;\nreturn [{ json: { ...plan, foundEmail: found } }];\n",
+          "language": "javaScript"
+        },
+        "position": [
+          1880,
+          900
+        ],
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2
+      },
+      {
+        "id": "e1a1a1a1-0008-4000-8000-000000000008",
+        "name": "IF Hunter Found Email",
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.foundEmail }}",
+                "operator": {
+                  "operation": "notEmpty",
+                  "type": "string"
+                }
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            }
+          }
+        },
+        "position": [
+          2100,
+          900
+        ],
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "e1a1a1a1-0009-4000-8000-000000000009",
+        "name": "PG Consume+Save Email",
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ $json.tenant_id }},{{ $json.lead_id }},{{ $json.foundEmail }}"
+          },
+          "query": "WITH deducted AS (SELECT aivory_ops.consume_enrichment_wallet($1,0.20,'email_reveal',$2,'hunter','{}'::jsonb) AS new_balance), upd AS (UPDATE aivory_ops.leads SET email=$3, updated_at=now() WHERE id=$2 RETURNING email) SELECT deducted.new_balance, upd.email FROM deducted, upd",
+          "resource": "database"
+        },
+        "position": [
+          2320,
+          860
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "id": "e1a1a1a1-0010-4000-8000-000000000010",
+        "name": "Merge After Email",
+        "parameters": {
+          "jsCode": "const plan = $('Plan Enrichment').item.json;\nlet email = plan.email;\nlet balance = plan.balance;\n// Parse Hunter Result / PG Consume+Save Email only ran when needEmail was true AND\n// (for the save step) a match was found -- $('NodeName') throws if that node never\n// executed for this item, so every lookup here is guarded.\ntry {\n  const parsed = $('Parse Hunter Result').all();\n  if (parsed.length && parsed[0].json.foundEmail) {\n    email = parsed[0].json.foundEmail;\n    try {\n      const saved = $('PG Consume+Save Email').all();\n      if (saved.length && saved[0].json.new_balance != null) balance = Number(saved[0].json.new_balance);\n    } catch (e) { /* save step didn't run */ }\n  }\n} catch (e) { /* Hunter branch didn't run -- needEmail was false */ }\nreturn [{ json: { ...plan, email, balance } }];\n",
+          "language": "javaScript"
+        },
+        "position": [
+          2540,
+          900
+        ],
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2
+      },
+      {
+        "id": "e1a1a1a1-0011-4000-8000-000000000011",
+        "name": "IF Need Phone",
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.needPhone }}",
+                "operator": {
+                  "operation": "equals",
+                  "type": "string"
+                },
+                "rightValue": "yes"
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            }
+          }
+        },
+        "position": [
+          2760,
+          900
+        ],
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "h0uUSvBDnJrhVAyW",
+            "name": "Lusha API Key"
+          }
+        },
+        "id": "e1a1a1a1-0012-4000-8000-000000000012",
+        "name": "HTTP Lusha Person Enrichment",
+        "onError": "continueRegularOutput",
+        "parameters": {
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "method": "GET",
+          "options": {
+            "timeout": 15000
+          },
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "email",
+                "value": "={{ $json.email }}"
+              },
+              {
+                "name": "companyName",
+                "value": "={{ $json.email ? '' : $json.company }}"
+              },
+              {
+                "name": "firstName",
+                "value": "={{ $json.email ? '' : ($json.name||'').trim().split(/\\s+/)[0] || '' }}"
+              },
+              {
+                "name": "lastName",
+                "value": "={{ $json.email ? '' : (($json.name||'').trim().split(/\\s+/).slice(1).join(' ')) || '' }}"
+              }
+            ]
+          },
+          "sendQuery": true,
+          "url": "https://api.lusha.com/v2/person"
+        },
+        "position": [
+          2980,
+          900
+        ],
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2
+      },
+      {
+        "id": "e1a1a1a1-0013-4000-8000-000000000013",
+        "name": "Parse Lusha Result",
+        "parameters": {
+          "jsCode": "const plan = $('Merge After Email').item.json;\nconst resp = $json;\nlet foundPhone = null;\nif (plan.needPhone === 'yes') {\n  const phones = resp && resp.data && Array.isArray(resp.data.phoneNumbers) ? resp.data.phoneNumbers : [];\n  const mobile = phones.find(p => p && p.number);\n  foundPhone = mobile ? mobile.number : null;\n}\nreturn [{ json: { ...plan, foundPhone } }];\n",
+          "language": "javaScript"
+        },
+        "position": [
+          3200,
+          900
+        ],
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2
+      },
+      {
+        "id": "e1a1a1a1-0014-4000-8000-000000000014",
+        "name": "IF Lusha Found Phone",
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.foundPhone }}",
+                "operator": {
+                  "operation": "notEmpty",
+                  "type": "string"
+                }
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict"
+            }
+          }
+        },
+        "position": [
+          3420,
+          900
+        ],
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "e1a1a1a1-0015-4000-8000-000000000015",
+        "name": "PG Consume+Save Phone",
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ $json.tenant_id }},{{ $json.lead_id }},{{ $json.foundPhone }}"
+          },
+          "query": "WITH deducted AS (SELECT aivory_ops.consume_enrichment_wallet($1,2.00,'phone_reveal',$2,'lusha','{}'::jsonb) AS new_balance), upd AS (UPDATE aivory_ops.leads SET phone=$3, updated_at=now() WHERE id=$2 RETURNING phone) SELECT deducted.new_balance, upd.phone FROM deducted, upd",
+          "resource": "database"
+        },
+        "position": [
+          3640,
+          860
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "id": "e1a1a1a1-0016-4000-8000-000000000016",
+        "name": "Format Enrichment Response",
+        "parameters": {
+          "jsCode": "const plan = $('Parse Lusha Result').item.json;\nlet phone = plan.phone;\nlet balance = plan.balance;\nif (plan.foundPhone) {\n  phone = plan.foundPhone;\n  try {\n    const saved = $('PG Consume+Save Phone').all();\n    if (saved.length && saved[0].json.new_balance != null) balance = Number(saved[0].json.new_balance);\n  } catch (e) { /* save step didn't run */ }\n}\nreturn [{ json: {\n  success: true,\n  data: { lead_id: plan.lead_id, email: plan.email || '', phone: phone || '' },\n  wallet_balance: balance\n} }];\n",
+          "language": "javaScript"
+        },
+        "position": [
+          3860,
+          900
+        ],
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "af58001b-54c1-4ecb-9c53-e58bb70040e0",
+        "name": "PG Update Deal",
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [ $json.body.lead_id, $json.body.tenant_id, $json.body.amount ?? null, $json.body.currency ?? null, $json.body.expected_close_date ?? null, $json.body.owner ?? null, $json.body.probability ?? null ] }}"
+          },
+          "query": "UPDATE aivory_ops.leads SET amount = COALESCE($3::numeric, amount), currency = COALESCE($4::text, currency), expected_close_date = COALESCE($5::date, expected_close_date), owner = COALESCE($6::text, owner), probability = COALESCE($7::int, probability), updated_at = now() WHERE id = $1 AND tenant_id = $2 RETURNING id, name, company, stage, amount, currency, expected_close_date, owner, probability",
+          "resource": "database"
+        },
+        "position": [
+          780,
+          1500
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "48eec307-89bc-432f-a640-02ec79d2ce04",
+        "name": "PG Pipeline Summary",
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ [ $json.body.tenant_id, $json.body.stage ?? 'open' ] }}"
+          },
+          "query": "SELECT stage, currency, SUM(amount)::numeric(18,2) AS total_amount, COUNT(*)::int AS deal_count FROM aivory_ops.leads WHERE tenant_id = $1 AND amount IS NOT NULL AND currency IS NOT NULL AND ($2::text = 'all'      OR ($2::text = 'open' AND stage IN ('new','qualifying','qualified'))      OR stage = $2::text) GROUP BY stage, currency ORDER BY stage, currency",
+          "resource": "database"
+        },
+        "position": [
+          780,
+          1660
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "id": "5ef20ad1-3cc8-4d7f-8a5c-f96f8043cabc",
+        "name": "Format Pipeline Response",
+        "parameters": {
+          "jsonOutput": "={{ { \"success\": true, \"rows\": $input.all().filter(i => i.json && i.json.stage).map(i => ({ stage: i.json.stage, currency: i.json.currency, total_amount: Number(i.json.total_amount), deal_count: Number(i.json.deal_count) })) } }}",
+          "mode": "raw"
+        },
+        "position": [
+          1040,
+          1660
+        ],
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4
+      }
+    ],
+    "updatedAt": "2026-08-30T08:25:18.122Z",
+    "versionId": "bafa0e58-a5ac-4efc-a1a0-ee1b0d5a8038",
+    "workflowId": "ebaq7yFRfYdrL3gT",
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-08-30T08:25:18.355Z",
+        "event": "activated",
+        "id": 325,
+        "userId": "c1c834f5-4add-4791-9ed5-bb9cc1ce8d9e",
+        "versionId": "bafa0e58-a5ac-4efc-a1a0-ee1b0d5a8038",
+        "workflowId": "ebaq7yFRfYdrL3gT"
+      },
+      {
+        "createdAt": "2026-08-30T08:25:18.318Z",
+        "event": "deactivated",
+        "id": 324,
+        "userId": "c1c834f5-4add-4791-9ed5-bb9cc1ce8d9e",
+        "versionId": "bafa0e58-a5ac-4efc-a1a0-ee1b0d5a8038",
+        "workflowId": "ebaq7yFRfYdrL3gT"
+      }
+    ]
+  },
+  "activeVersionId": "bafa0e58-a5ac-4efc-a1a0-ee1b0d5a8038",
+  "connections": {
+    "Check Bridge Secret": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Route By Action",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Respond Unauthorized",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Format Enrichment Response": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond Success",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Format List Response": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond Success",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Format Pipeline Response": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond Success",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Format Success Response": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond Success",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "HTTP Hunter Email Finder": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Parse Hunter Result",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "HTTP Lusha Person Enrichment": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Parse Lusha Result",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "IF Hunter Found Email": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "PG Consume+Save Email",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Merge After Email",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "IF Lusha Found Phone": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "PG Consume+Save Phone",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Format Enrichment Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "IF Need Email": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "HTTP Hunter Email Finder",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Merge After Email",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "IF Need Phone": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "HTTP Lusha Person Enrichment",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Parse Lusha Result",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "IF Should Respond Early": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond Early",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "IF Need Email",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Merge After Email": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "IF Need Phone",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Native Leads Qualifier Webhook": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Check Bridge Secret",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Consume+Save Email": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Merge After Email",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Consume+Save Phone": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format Enrichment Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Create Lead": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format Success Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Get Lead": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format Success Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Get Lead+Wallet": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Plan Enrichment",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG List Leads": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format List Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Pipeline Summary": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format Pipeline Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Update BANT": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format Success Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Update Deal": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format Success Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Update Lead Stage": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format Success Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Parse Hunter Result": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "IF Hunter Found Email",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Parse Lusha Result": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "IF Lusha Found Phone",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Plan Enrichment": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "IF Should Respond Early",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Route By Action": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "PG Create Lead",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "PG List Leads",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "PG Get Lead",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "PG Update Lead Stage",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "PG Update BANT",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "PG Get Lead+Wallet",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "PG Update Deal",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "PG Pipeline Summary",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "description": "Native Leads Qualifier Bridge \u2014 BANT-qualification lead pipeline backed by aivory_ops.leads",
+  "id": "ebaq7yFRfYdrL3gT",
+  "isArchived": false,
+  "name": "Native Leads Qualifier Bridge",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "id": "3339a6c8-2d7f-4830-9dc9-a2690bc17075",
+      "name": "Native Leads Qualifier Webhook",
+      "parameters": {
+        "authentication": "none",
+        "httpMethod": "POST",
+        "path": "native-leads-qualifier",
+        "responseMode": "responseNode"
+      },
+      "position": [
+        80,
+        400
+      ],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "webhookId": "6548627e-c2cb-4dd5-9dee-1878754cd751"
+    },
+    {
+      "id": "0b63fa2f-8c75-49e3-991c-b034a761ce86",
+      "name": "Check Bridge Secret",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.headers['x-bridge-secret'] }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "<<REDACTED:N8N_SHARED_SECRET>>"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      },
+      "position": [
+        300,
+        400
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "a6457a77-7a3c-4d66-bef6-6abd127da04b",
+      "name": "Route By Action",
+      "parameters": {
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Unknown Action"
+        },
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "create_lead"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "create_lead"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "list_leads"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "list_leads"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "get_lead"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "get_lead"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "update_lead_stage"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "update_lead_stage"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "update_bant"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "update_bant"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "enrich_lead_contact"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "enrich_lead_contact"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "update_deal"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "update_deal"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "pipeline_summary"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "pipeline_summary"
+            }
+          ]
+        }
+      },
+      "position": [
+        520,
+        300
+      ],
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2
+    },
+    {
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "3825e6ea-124c-4b57-8d52-5291e59ddc96",
+      "name": "PG Create Lead",
+      "parameters": {
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "company": "={{ $json.body.company || '' }}",
+            "email": "={{ $json.body.email || '' }}",
+            "name": "={{ $json.body.name }}",
+            "tenant_id": "={{ $json.body.tenant_id }}"
+          }
+        },
+        "operation": "insert",
+        "resource": "database",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "aivory_ops"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "leads"
+        }
+      },
+      "position": [
+        780,
+        60
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "id": "cbf77226-249c-48af-8871-46feec0b9beb",
+      "name": "Format Success Response",
+      "parameters": {
+        "jsonOutput": "={{ $input.all().filter(i => i.json && i.json.id).length === 0 ? { \"success\": false, \"error\": \"Not found, or not accessible to this tenant.\" } : { \"success\": true, \"data\": $input.all().filter(i => i.json && i.json.id).map(i => i.json) } }}",
+        "mode": "raw"
+      },
+      "position": [
+        1040,
+        300
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "523fc795-6d07-410c-866d-5992de50af61",
+      "name": "PG List Leads",
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ $json.body.tenant_id }},{{ $json.body.stage || 'all' }}"
+        },
+        "query": "SELECT id, name, company, email, stage, created_at FROM aivory_ops.leads WHERE tenant_id = $1 AND ($2 = 'all' OR stage = $2) ORDER BY created_at DESC LIMIT 50",
+        "resource": "database"
+      },
+      "position": [
+        780,
+        200
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "id": "5d4e1c82-bf45-4815-a3c1-f61e8c8a1211",
+      "name": "Format List Response",
+      "parameters": {
+        "jsonOutput": "={{ { \"success\": true, \"data\": $input.all().filter(i => i.json && i.json.id).map(i => i.json) } }}",
+        "mode": "raw"
+      },
+      "position": [
+        1040,
+        200
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "40c78663-6c1e-483d-b513-aaa8b54d9c27",
+      "name": "PG Get Lead",
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ $json.body.lead_id }},{{ $json.body.tenant_id }}"
+        },
+        "query": "SELECT id, name, company, email, stage, bant_budget, bant_authority, bant_need, bant_timeline, notes, created_at, updated_at FROM aivory_ops.leads WHERE id = $1 AND tenant_id = $2",
+        "resource": "database"
+      },
+      "position": [
+        780,
+        340
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "05fc64c4-b146-4fc9-a005-b528ab3e0650",
+      "name": "PG Update Lead Stage",
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ $json.body.lead_id }},{{ $json.body.tenant_id }},{{ $json.body.stage }}"
+        },
+        "query": "UPDATE aivory_ops.leads SET stage=$3, updated_at=now() WHERE id=$1 AND tenant_id=$2 RETURNING id, stage",
+        "resource": "database"
+      },
+      "position": [
+        780,
+        480
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "17e8aefd-2e5c-414d-b401-6d6bbaa397d2",
+      "name": "PG Update BANT",
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "columns": {
+          "mappingMode": "defineBelow",
+          "matchingColumns": [
+            "id",
+            "tenant_id"
+          ],
+          "value": {
+            "bant_authority": "={{ $json.body.bant_authority || '' }}",
+            "bant_budget": "={{ $json.body.bant_budget || '' }}",
+            "bant_need": "={{ $json.body.bant_need || '' }}",
+            "bant_timeline": "={{ $json.body.bant_timeline || '' }}",
+            "id": "={{ $json.body.lead_id }}",
+            "notes": "={{ $json.body.notes || '' }}",
+            "tenant_id": "={{ $json.body.tenant_id }}"
+          }
+        },
+        "operation": "update",
+        "resource": "database",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "aivory_ops"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "leads"
+        }
+      },
+      "position": [
+        780,
+        620
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "id": "9e056eaa-0b26-44fd-9315-cfaead5e4a18",
+      "name": "Respond Unknown Action",
+      "parameters": {
+        "options": {
+          "responseCode": 400
+        },
+        "respondWith": "json",
+        "responseBody": "={{ { \"error\": \"unknown action\" } }}"
+      },
+      "position": [
+        780,
+        760
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5
+    },
+    {
+      "id": "4bf6afe8-e0cc-4c0e-a4d7-e5539cfc7a8c",
+      "name": "Respond Unauthorized",
+      "parameters": {
+        "options": {
+          "responseCode": 401
+        },
+        "respondWith": "json",
+        "responseBody": "={{ { \"error\": \"unauthorized\" } }}"
+      },
+      "position": [
+        520,
+        560
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5
+    },
+    {
+      "id": "df273ecd-4907-485d-9383-9819a867d167",
+      "name": "Respond Success",
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "position": [
+        1260,
+        300
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "e1a1a1a1-0001-4000-8000-000000000001",
+      "name": "PG Get Lead+Wallet",
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ $json.body.lead_id }},{{ $json.body.tenant_id }}"
+        },
+        "query": "SELECT l.id, l.name, l.company, l.email, l.phone, l.website, l.tenant_id, COALESCE(w.balance_usd,0) AS balance_usd FROM aivory_ops.leads l LEFT JOIN aivory_ops.enrichment_wallet w ON w.tenant_id = l.tenant_id WHERE l.id = $1 AND l.tenant_id = $2",
+        "resource": "database"
+      },
+      "position": [
+        780,
+        900
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "id": "e1a1a1a1-0002-4000-8000-000000000002",
+      "name": "Plan Enrichment",
+      "parameters": {
+        "jsCode": "const body = $('Native Leads Qualifier Webhook').item.json.body;\nconst row = $json;\nif (!row || !row.id) {\n  return [{ json: { respond: 'not_found' } }];\n}\nconst fields = Array.isArray(body.fields) && body.fields.length ? body.fields : ['email','phone'];\nconst needEmail = fields.includes('email') && !row.email;\nconst needPhone = fields.includes('phone') && !row.phone;\nconst PRICE_EMAIL = 0.20;\nconst PRICE_PHONE = 2.00;\nconst cost = (needEmail ? PRICE_EMAIL : 0) + (needPhone ? PRICE_PHONE : 0);\nconst balance = Number(row.balance_usd || 0);\nif (cost > 0 && balance < cost) {\n  return [{ json: { respond: 'insufficient_balance', balance, required: cost } }];\n}\nreturn [{ json: {\n  respond: 'proceed', needEmail: needEmail ? 'yes' : 'no', needPhone: needPhone ? 'yes' : 'no', balance,\n  lead_id: row.id, tenant_id: row.tenant_id, name: row.name,\n  company: row.company || '', website: row.website || '', email: row.email || '', phone: row.phone || ''\n} }];\n",
+        "language": "javaScript"
+      },
+      "position": [
+        1000,
+        900
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "e1a1a1a1-0003-4000-8000-000000000003",
+      "name": "IF Should Respond Early",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.respond }}",
+              "operator": {
+                "operation": "notEquals",
+                "type": "string"
+              },
+              "rightValue": "proceed"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      },
+      "position": [
+        1220,
+        900
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "id": "e1a1a1a1-0004-4000-8000-000000000004",
+      "name": "Respond Early",
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": false, \"error\": $json.respond, \"balance\": $json.balance, \"required\": $json.required } }}"
+      },
+      "position": [
+        1440,
+        820
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5
+    },
+    {
+      "id": "e1a1a1a1-0005-4000-8000-000000000005",
+      "name": "IF Need Email",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.needEmail }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      },
+      "position": [
+        1440,
+        980
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "9EjOKdR0tc7HxXhq",
+          "name": "Hunter API Key"
+        }
+      },
+      "id": "e1a1a1a1-0006-4000-8000-000000000006",
+      "name": "HTTP Hunter Email Finder",
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "GET",
+        "options": {
+          "timeout": 15000
+        },
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "domain",
+              "value": "={{ $json.website }}"
+            },
+            {
+              "name": "company",
+              "value": "={{ $json.website ? '' : $json.company }}"
+            },
+            {
+              "name": "first_name",
+              "value": "={{ ($json.name||'').trim().split(/\\s+/)[0] || '' }}"
+            },
+            {
+              "name": "last_name",
+              "value": "={{ (($json.name||'').trim().split(/\\s+/).slice(1).join(' ')) || '' }}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "url": "https://api.hunter.io/v2/email-finder"
+      },
+      "position": [
+        1660,
+        900
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "e1a1a1a1-0007-4000-8000-000000000007",
+      "name": "Parse Hunter Result",
+      "parameters": {
+        "jsCode": "const plan = $('Plan Enrichment').item.json;\nconst resp = $json;\nconst found = resp && resp.data && resp.data.email ? resp.data.email : null;\nreturn [{ json: { ...plan, foundEmail: found } }];\n",
+        "language": "javaScript"
+      },
+      "position": [
+        1880,
+        900
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "e1a1a1a1-0008-4000-8000-000000000008",
+      "name": "IF Hunter Found Email",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.foundEmail }}",
+              "operator": {
+                "operation": "notEmpty",
+                "type": "string"
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      },
+      "position": [
+        2100,
+        900
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "e1a1a1a1-0009-4000-8000-000000000009",
+      "name": "PG Consume+Save Email",
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ $json.tenant_id }},{{ $json.lead_id }},{{ $json.foundEmail }}"
+        },
+        "query": "WITH deducted AS (SELECT aivory_ops.consume_enrichment_wallet($1,0.20,'email_reveal',$2,'hunter','{}'::jsonb) AS new_balance), upd AS (UPDATE aivory_ops.leads SET email=$3, updated_at=now() WHERE id=$2 RETURNING email) SELECT deducted.new_balance, upd.email FROM deducted, upd",
+        "resource": "database"
+      },
+      "position": [
+        2320,
+        860
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "id": "e1a1a1a1-0010-4000-8000-000000000010",
+      "name": "Merge After Email",
+      "parameters": {
+        "jsCode": "const plan = $('Plan Enrichment').item.json;\nlet email = plan.email;\nlet balance = plan.balance;\n// Parse Hunter Result / PG Consume+Save Email only ran when needEmail was true AND\n// (for the save step) a match was found -- $('NodeName') throws if that node never\n// executed for this item, so every lookup here is guarded.\ntry {\n  const parsed = $('Parse Hunter Result').all();\n  if (parsed.length && parsed[0].json.foundEmail) {\n    email = parsed[0].json.foundEmail;\n    try {\n      const saved = $('PG Consume+Save Email').all();\n      if (saved.length && saved[0].json.new_balance != null) balance = Number(saved[0].json.new_balance);\n    } catch (e) { /* save step didn't run */ }\n  }\n} catch (e) { /* Hunter branch didn't run -- needEmail was false */ }\nreturn [{ json: { ...plan, email, balance } }];\n",
+        "language": "javaScript"
+      },
+      "position": [
+        2540,
+        900
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "e1a1a1a1-0011-4000-8000-000000000011",
+      "name": "IF Need Phone",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.needPhone }}",
+              "operator": {
+                "operation": "equals",
+                "type": "string"
+              },
+              "rightValue": "yes"
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      },
+      "position": [
+        2760,
+        900
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "h0uUSvBDnJrhVAyW",
+          "name": "Lusha API Key"
+        }
+      },
+      "id": "e1a1a1a1-0012-4000-8000-000000000012",
+      "name": "HTTP Lusha Person Enrichment",
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "method": "GET",
+        "options": {
+          "timeout": 15000
+        },
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "={{ $json.email }}"
+            },
+            {
+              "name": "companyName",
+              "value": "={{ $json.email ? '' : $json.company }}"
+            },
+            {
+              "name": "firstName",
+              "value": "={{ $json.email ? '' : ($json.name||'').trim().split(/\\s+/)[0] || '' }}"
+            },
+            {
+              "name": "lastName",
+              "value": "={{ $json.email ? '' : (($json.name||'').trim().split(/\\s+/).slice(1).join(' ')) || '' }}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "url": "https://api.lusha.com/v2/person"
+      },
+      "position": [
+        2980,
+        900
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2
+    },
+    {
+      "id": "e1a1a1a1-0013-4000-8000-000000000013",
+      "name": "Parse Lusha Result",
+      "parameters": {
+        "jsCode": "const plan = $('Merge After Email').item.json;\nconst resp = $json;\nlet foundPhone = null;\nif (plan.needPhone === 'yes') {\n  const phones = resp && resp.data && Array.isArray(resp.data.phoneNumbers) ? resp.data.phoneNumbers : [];\n  const mobile = phones.find(p => p && p.number);\n  foundPhone = mobile ? mobile.number : null;\n}\nreturn [{ json: { ...plan, foundPhone } }];\n",
+        "language": "javaScript"
+      },
+      "position": [
+        3200,
+        900
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "id": "e1a1a1a1-0014-4000-8000-000000000014",
+      "name": "IF Lusha Found Phone",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.foundPhone }}",
+              "operator": {
+                "operation": "notEmpty",
+                "type": "string"
+              }
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          }
+        }
+      },
+      "position": [
+        3420,
+        900
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "e1a1a1a1-0015-4000-8000-000000000015",
+      "name": "PG Consume+Save Phone",
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ $json.tenant_id }},{{ $json.lead_id }},{{ $json.foundPhone }}"
+        },
+        "query": "WITH deducted AS (SELECT aivory_ops.consume_enrichment_wallet($1,2.00,'phone_reveal',$2,'lusha','{}'::jsonb) AS new_balance), upd AS (UPDATE aivory_ops.leads SET phone=$3, updated_at=now() WHERE id=$2 RETURNING phone) SELECT deducted.new_balance, upd.phone FROM deducted, upd",
+        "resource": "database"
+      },
+      "position": [
+        3640,
+        860
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "id": "e1a1a1a1-0016-4000-8000-000000000016",
+      "name": "Format Enrichment Response",
+      "parameters": {
+        "jsCode": "const plan = $('Parse Lusha Result').item.json;\nlet phone = plan.phone;\nlet balance = plan.balance;\nif (plan.foundPhone) {\n  phone = plan.foundPhone;\n  try {\n    const saved = $('PG Consume+Save Phone').all();\n    if (saved.length && saved[0].json.new_balance != null) balance = Number(saved[0].json.new_balance);\n  } catch (e) { /* save step didn't run */ }\n}\nreturn [{ json: {\n  success: true,\n  data: { lead_id: plan.lead_id, email: plan.email || '', phone: phone || '' },\n  wallet_balance: balance\n} }];\n",
+        "language": "javaScript"
+      },
+      "position": [
+        3860,
+        900
+      ],
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "af58001b-54c1-4ecb-9c53-e58bb70040e0",
+      "name": "PG Update Deal",
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [ $json.body.lead_id, $json.body.tenant_id, $json.body.amount ?? null, $json.body.currency ?? null, $json.body.expected_close_date ?? null, $json.body.owner ?? null, $json.body.probability ?? null ] }}"
+        },
+        "query": "UPDATE aivory_ops.leads SET amount = COALESCE($3::numeric, amount), currency = COALESCE($4::text, currency), expected_close_date = COALESCE($5::date, expected_close_date), owner = COALESCE($6::text, owner), probability = COALESCE($7::int, probability), updated_at = now() WHERE id = $1 AND tenant_id = $2 RETURNING id, name, company, stage, amount, currency, expected_close_date, owner, probability",
+        "resource": "database"
+      },
+      "position": [
+        780,
+        1500
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "48eec307-89bc-432f-a640-02ec79d2ce04",
+      "name": "PG Pipeline Summary",
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ [ $json.body.tenant_id, $json.body.stage ?? 'open' ] }}"
+        },
+        "query": "SELECT stage, currency, SUM(amount)::numeric(18,2) AS total_amount, COUNT(*)::int AS deal_count FROM aivory_ops.leads WHERE tenant_id = $1 AND amount IS NOT NULL AND currency IS NOT NULL AND ($2::text = 'all'      OR ($2::text = 'open' AND stage IN ('new','qualifying','qualified'))      OR stage = $2::text) GROUP BY stage, currency ORDER BY stage, currency",
+        "resource": "database"
+      },
+      "position": [
+        780,
+        1660
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "id": "5ef20ad1-3cc8-4d7f-8a5c-f96f8043cabc",
+      "name": "Format Pipeline Response",
+      "parameters": {
+        "jsonOutput": "={{ { \"success\": true, \"rows\": $input.all().filter(i => i.json && i.json.stage).map(i => ({ stage: i.json.stage, currency: i.json.currency, total_amount: Number(i.json.total_amount), deal_count: Number(i.json.deal_count) })) } }}",
+        "mode": "raw"
+      },
+      "position": [
+        1040,
+        1660
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    }
+  ],
+  "pinData": null,
+  "settings": {
+    "availableInMCP": true,
+    "executionOrder": "v1"
+  },
+  "sourceWorkflowId": null,
+  "staticData": null,
+  "tags": [],
+  "versionCounter": 5
+}
