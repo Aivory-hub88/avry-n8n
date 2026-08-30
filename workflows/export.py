@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Export the native-bridge n8n workflows with secrets redacted.
+"""Export the native-bridge n8n workflows.
 
-The "Check Bridge Secret" node compares the incoming header against a LITERAL
-copy of N8N_SHARED_SECRET, so a raw export carries a live credential. Any
-value matching a known secret is replaced with a placeholder, and the result
-is checked for leftover high-entropy strings before it is written.
+As of 2026-08-30 these exports should need NO redaction: the bridge secret
+moved out of the "Check Bridge Secret" node parameter and into the Webhook
+node's headerAuth credential, so the definitions no longer carry it. The
+redaction pass is kept as a safety net -- if it ever reports having replaced
+something, a secret has crept back into a workflow parameter and that is the
+bug to fix, not something to accept.
 
 Credential *references* (id + name) are kept: they name n8n's own credential
 store entries, which is structure, not secret material.
@@ -12,7 +14,14 @@ store entries, which is structure, not secret material.
 import json, os, re, sys, urllib.request
 
 OUT_DIR = sys.argv[1]
-WORKFLOW_IDS = ["ebaq7yFRfYdrL3gT"]  # Native Leads Qualifier Bridge
+# The live native-bridge workflows. "Native Customer Service Bridge"
+# (Q6ivz00vrr4hoA3x) is deliberately absent: it is archived, so the API
+# refuses to update it and it cannot run.
+WORKFLOW_IDS = [
+    "ebaq7yFRfYdrL3gT",  # Native Leads Qualifier Bridge
+    "Dgmai5aN8y1qRdyv",  # Native Finance Invoice Ops Bridge
+    "MGg4Gtb6eH7TNt5j",  # Native Office Assistant Bridge
+]
 
 
 def api_key():

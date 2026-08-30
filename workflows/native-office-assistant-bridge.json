@@ -1,0 +1,290 @@
+{
+  "active": true,
+  "activeVersion": {
+    "authors": "Admin Aivory",
+    "autosaved": false,
+    "connections": {
+      "Format Success Response": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Respond Success",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Native Office Assistant Webhook": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Record Meeting Summary",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Record Meeting Summary": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format Success Response",
+              "type": "main"
+            }
+          ]
+        ]
+      }
+    },
+    "createdAt": "2026-08-30T10:28:59.298Z",
+    "description": null,
+    "name": null,
+    "nodeGroups": [],
+    "nodes": [
+      {
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "EHCLJ4i2zioOVjC2",
+            "name": "Aivory Bridge Secret (X-Bridge-Secret)"
+          }
+        },
+        "id": "webhook-oa-1",
+        "name": "Native Office Assistant Webhook",
+        "parameters": {
+          "authentication": "headerAuth",
+          "httpMethod": "POST",
+          "path": "native-office-assistant",
+          "responseMode": "responseNode"
+        },
+        "position": [
+          80,
+          400
+        ],
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "webhookId": "office-assistant-native-bridge"
+      },
+      {
+        "continueOnFail": true,
+        "id": "record-meeting-summary-oa-1",
+        "name": "Record Meeting Summary",
+        "parameters": {
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "x-internal-token",
+                "value": "aivory-internal-2026"
+              }
+            ]
+          },
+          "jsonBody": "={\n  \"user_id\": \"{{ $json.body.tenant_id }}\",\n  \"agent_type\": \"office_assistant\",\n  \"action_type\": \"meeting\",\n  \"payload\": {\n    \"title\": \"{{ $json.body.title }}\",\n    \"meeting_date\": \"{{ $json.body.meeting_date }}\",\n    \"duration_minutes\": {{ $json.body.duration_minutes || 0 }},\n    \"participants\": {{ JSON.stringify($json.body.participants || []) }},\n    \"decisions\": {{ JSON.stringify($json.body.decisions || []) }},\n    \"action_items\": {{ JSON.stringify($json.body.action_items || []) }},\n    \"risks\": {{ JSON.stringify($json.body.risks || []) }},\n    \"summary\": \"{{ $json.body.summary }}\"\n  },\n  \"session_id\": \"cerveau\",\n  \"channel\": \"cerveau\"\n}",
+          "method": "POST",
+          "options": {
+            "timeout": 15000
+          },
+          "sendBody": true,
+          "sendHeaders": true,
+          "specifyBody": "json",
+          "url": "http://avry-backend:8081/api/v1/agent-actions/internal"
+        },
+        "position": [
+          520,
+          300
+        ],
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 3
+      },
+      {
+        "id": "format-success-oa-1",
+        "name": "Format Success Response",
+        "parameters": {
+          "jsonOutput": "={{ $json.ok === true ? { \"success\": true, \"action_id\": $json.action_id } : { \"success\": false, \"error\": $json.detail || $json.error || \"backend call failed\" } }}",
+          "mode": "raw"
+        },
+        "position": [
+          760,
+          300
+        ],
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4
+      },
+      {
+        "id": "respond-success-oa-1",
+        "name": "Respond Success",
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}"
+        },
+        "position": [
+          980,
+          300
+        ],
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5
+      }
+    ],
+    "updatedAt": "2026-08-30T10:28:59.298Z",
+    "versionId": "00c4a3de-ca1d-4d57-a42a-1bea3c362cce",
+    "workflowId": "MGg4Gtb6eH7TNt5j",
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-08-30T10:28:59.448Z",
+        "event": "activated",
+        "id": 331,
+        "userId": "c1c834f5-4add-4791-9ed5-bb9cc1ce8d9e",
+        "versionId": "00c4a3de-ca1d-4d57-a42a-1bea3c362cce",
+        "workflowId": "MGg4Gtb6eH7TNt5j"
+      },
+      {
+        "createdAt": "2026-08-30T10:28:59.374Z",
+        "event": "deactivated",
+        "id": 330,
+        "userId": "c1c834f5-4add-4791-9ed5-bb9cc1ce8d9e",
+        "versionId": "00c4a3de-ca1d-4d57-a42a-1bea3c362cce",
+        "workflowId": "MGg4Gtb6eH7TNt5j"
+      }
+    ]
+  },
+  "activeVersionId": "00c4a3de-ca1d-4d57-a42a-1bea3c362cce",
+  "connections": {
+    "Format Success Response": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond Success",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Native Office Assistant Webhook": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Record Meeting Summary",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Record Meeting Summary": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format Success Response",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "description": null,
+  "id": "MGg4Gtb6eH7TNt5j",
+  "isArchived": false,
+  "name": "Native Office Assistant Bridge",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "EHCLJ4i2zioOVjC2",
+          "name": "Aivory Bridge Secret (X-Bridge-Secret)"
+        }
+      },
+      "id": "webhook-oa-1",
+      "name": "Native Office Assistant Webhook",
+      "parameters": {
+        "authentication": "headerAuth",
+        "httpMethod": "POST",
+        "path": "native-office-assistant",
+        "responseMode": "responseNode"
+      },
+      "position": [
+        80,
+        400
+      ],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "webhookId": "office-assistant-native-bridge"
+    },
+    {
+      "continueOnFail": true,
+      "id": "record-meeting-summary-oa-1",
+      "name": "Record Meeting Summary",
+      "parameters": {
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "x-internal-token",
+              "value": "aivory-internal-2026"
+            }
+          ]
+        },
+        "jsonBody": "={\n  \"user_id\": \"{{ $json.body.tenant_id }}\",\n  \"agent_type\": \"office_assistant\",\n  \"action_type\": \"meeting\",\n  \"payload\": {\n    \"title\": \"{{ $json.body.title }}\",\n    \"meeting_date\": \"{{ $json.body.meeting_date }}\",\n    \"duration_minutes\": {{ $json.body.duration_minutes || 0 }},\n    \"participants\": {{ JSON.stringify($json.body.participants || []) }},\n    \"decisions\": {{ JSON.stringify($json.body.decisions || []) }},\n    \"action_items\": {{ JSON.stringify($json.body.action_items || []) }},\n    \"risks\": {{ JSON.stringify($json.body.risks || []) }},\n    \"summary\": \"{{ $json.body.summary }}\"\n  },\n  \"session_id\": \"cerveau\",\n  \"channel\": \"cerveau\"\n}",
+        "method": "POST",
+        "options": {
+          "timeout": 15000
+        },
+        "sendBody": true,
+        "sendHeaders": true,
+        "specifyBody": "json",
+        "url": "http://avry-backend:8081/api/v1/agent-actions/internal"
+      },
+      "position": [
+        520,
+        300
+      ],
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3
+    },
+    {
+      "id": "format-success-oa-1",
+      "name": "Format Success Response",
+      "parameters": {
+        "jsonOutput": "={{ $json.ok === true ? { \"success\": true, \"action_id\": $json.action_id } : { \"success\": false, \"error\": $json.detail || $json.error || \"backend call failed\" } }}",
+        "mode": "raw"
+      },
+      "position": [
+        760,
+        300
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "id": "respond-success-oa-1",
+      "name": "Respond Success",
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "position": [
+        980,
+        300
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5
+    }
+  ],
+  "pinData": null,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "sourceWorkflowId": null,
+  "staticData": null,
+  "tags": [],
+  "versionCounter": 5
+}

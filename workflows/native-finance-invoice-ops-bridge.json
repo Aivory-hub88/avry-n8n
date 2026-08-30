@@ -1,0 +1,1261 @@
+{
+  "active": true,
+  "activeVersion": {
+    "authors": "Admin Aivory",
+    "autosaved": false,
+    "connections": {
+      "Format List Response": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Respond Success",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Format Success Response": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Respond Success",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Invoice Belongs To Tenant?": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "PG Insert Invoice Line",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "Format Success Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Native Finance Invoice Ops Webhook": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Route By Action",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Check Invoice Owner": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Invoice Belongs To Tenant?",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Create Invoice": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format Success Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Get Invoice": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format Success Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Insert Invoice Line": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format Success Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG List Invoices": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format List Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "PG Update Invoice Status": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "Format Success Response",
+              "type": "main"
+            }
+          ]
+        ]
+      },
+      "Route By Action": {
+        "main": [
+          [
+            {
+              "index": 0,
+              "node": "PG Create Invoice",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "PG Check Invoice Owner",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "PG List Invoices",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "PG Get Invoice",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "PG Update Invoice Status",
+              "type": "main"
+            }
+          ],
+          [
+            {
+              "index": 0,
+              "node": "Respond Unknown Action",
+              "type": "main"
+            }
+          ]
+        ]
+      }
+    },
+    "createdAt": "2026-08-30T10:28:59.106Z",
+    "description": null,
+    "name": null,
+    "nodeGroups": [],
+    "nodes": [
+      {
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "EHCLJ4i2zioOVjC2",
+            "name": "Aivory Bridge Secret (X-Bridge-Secret)"
+          }
+        },
+        "id": "d5ddf0ee-dddb-4855-9074-b832c45ae3d2",
+        "name": "Native Finance Invoice Ops Webhook",
+        "parameters": {
+          "authentication": "headerAuth",
+          "httpMethod": "POST",
+          "path": "native-finance-invoice-ops",
+          "responseMode": "responseNode"
+        },
+        "position": [
+          80,
+          400
+        ],
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "webhookId": "19a31569-a91d-418a-a74c-6d78a90dca3b"
+      },
+      {
+        "id": "c960077c-327e-4ca4-8f6b-81014bf9d981",
+        "name": "Route By Action",
+        "parameters": {
+          "options": {
+            "fallbackOutput": "extra",
+            "renameFallbackOutput": "Unknown Action"
+          },
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "create_invoice"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "create_invoice"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "add_invoice_line"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "add_invoice_line"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "list_invoices"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "list_invoices"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "get_invoice"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "get_invoice"
+              },
+              {
+                "conditions": {
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.body.action }}",
+                      "operator": {
+                        "operation": "equals",
+                        "type": "string"
+                      },
+                      "rightValue": "update_invoice_status"
+                    }
+                  ],
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict"
+                  }
+                },
+                "outputKey": "update_invoice_status"
+              }
+            ]
+          }
+        },
+        "position": [
+          520,
+          300
+        ],
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2
+      },
+      {
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "5c66264a-a99c-4d4e-af64-f4bfd06ad655",
+        "name": "PG Create Invoice",
+        "parameters": {
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "currency": "={{ $json.body.currency || 'USD' }}",
+              "customer_email": "={{ $json.body.customer_email || '' }}",
+              "customer_name": "={{ $json.body.customer_name }}",
+              "due_date": "={{ $json.body.due_date || null }}",
+              "tenant_id": "={{ $json.body.tenant_id }}"
+            }
+          },
+          "operation": "insert",
+          "resource": "database",
+          "schema": {
+            "__rl": true,
+            "mode": "list",
+            "value": "aivory_ops"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "list",
+            "value": "invoices"
+          }
+        },
+        "position": [
+          780,
+          60
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "id": "84094534-c49f-4622-867d-3a383e4de817",
+        "name": "Format Success Response",
+        "parameters": {
+          "jsonOutput": "={{ $input.all().filter(i => i.json && i.json.id).length === 0 ? { \"success\": false, \"error\": \"Not found, or not accessible to this tenant.\" } : { \"success\": true, \"data\": $input.all().filter(i => i.json && i.json.id).map(i => i.json) } }}",
+          "mode": "raw"
+        },
+        "position": [
+          1440,
+          300
+        ],
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "f6885b0a-5a0c-46ea-be00-0e7dddbbac31",
+        "name": "PG Check Invoice Owner",
+        "parameters": {
+          "combineConditions": "AND",
+          "limit": 1,
+          "operation": "select",
+          "resource": "database",
+          "returnAll": false,
+          "schema": {
+            "__rl": true,
+            "mode": "list",
+            "value": "aivory_ops"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "list",
+            "value": "invoices"
+          },
+          "where": {
+            "values": [
+              {
+                "column": "id",
+                "condition": "equal",
+                "value": "={{ $json.body.invoice_id }}"
+              },
+              {
+                "column": "tenant_id",
+                "condition": "equal",
+                "value": "={{ $json.body.tenant_id }}"
+              }
+            ]
+          }
+        },
+        "position": [
+          780,
+          200
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "id": "f8ab33ae-79b6-402c-b461-78e88a05da5c",
+        "name": "Invoice Belongs To Tenant?",
+        "parameters": {
+          "conditions": {
+            "combinator": "and",
+            "conditions": [
+              {
+                "leftValue": "={{ $json.id }}",
+                "operator": {
+                  "operation": "exists",
+                  "type": "string"
+                },
+                "rightValue": ""
+              }
+            ],
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose"
+            }
+          }
+        },
+        "position": [
+          1000,
+          200
+        ],
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2
+      },
+      {
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "57f52cfc-9734-4477-8583-6a10acdb5863",
+        "name": "PG Insert Invoice Line",
+        "parameters": {
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "description": "={{ $('Native Finance Invoice Ops Webhook').item.json.body.description }}",
+              "invoice_id": "={{ $('Native Finance Invoice Ops Webhook').item.json.body.invoice_id }}",
+              "quantity": "={{ $('Native Finance Invoice Ops Webhook').item.json.body.quantity || 1 }}",
+              "tenant_id": "={{ $('Native Finance Invoice Ops Webhook').item.json.body.tenant_id }}",
+              "unit_price": "={{ $('Native Finance Invoice Ops Webhook').item.json.body.unit_price || 0 }}"
+            }
+          },
+          "operation": "insert",
+          "resource": "database",
+          "schema": {
+            "__rl": true,
+            "mode": "list",
+            "value": "aivory_ops"
+          },
+          "table": {
+            "__rl": true,
+            "mode": "list",
+            "value": "invoice_lines"
+          }
+        },
+        "position": [
+          1220,
+          140
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "43243efd-56ac-46f3-a507-a5e33d58fca1",
+        "name": "PG List Invoices",
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ $json.body.tenant_id }},{{ $json.body.status || 'all' }}"
+          },
+          "query": "SELECT i.id, i.customer_name, i.status, i.currency, i.due_date, i.created_at, COALESCE((SELECT SUM(quantity*unit_price) FROM aivory_ops.invoice_lines WHERE invoice_id=i.id AND tenant_id=i.tenant_id), 0) as total_amount FROM aivory_ops.invoices i WHERE i.tenant_id = $1 AND ($2 = 'all' OR i.status = $2) ORDER BY i.created_at DESC LIMIT 50",
+          "resource": "database"
+        },
+        "position": [
+          780,
+          340
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "id": "c0d23202-4477-4607-82f1-1c69997b400a",
+        "name": "Format List Response",
+        "parameters": {
+          "jsonOutput": "={{ { \"success\": true, \"data\": $input.all().filter(i => i.json && i.json.id).map(i => i.json) } }}",
+          "mode": "raw"
+        },
+        "position": [
+          1040,
+          340
+        ],
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "6af523d4-1fd1-4a66-9ced-195478513a44",
+        "name": "PG Get Invoice",
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ $json.body.invoice_id }},{{ $json.body.tenant_id }}"
+          },
+          "query": "SELECT i.id, i.customer_name, i.customer_email, i.status, i.currency, i.due_date, i.created_at, i.updated_at, COALESCE((SELECT SUM(quantity*unit_price) FROM aivory_ops.invoice_lines WHERE invoice_id=i.id AND tenant_id=i.tenant_id), 0) as total_amount, COALESCE(json_agg(json_build_object('description',l.description,'quantity',l.quantity,'unit_price',l.unit_price) ORDER BY l.created_at) FILTER (WHERE l.id IS NOT NULL), '[]') as lines FROM aivory_ops.invoices i LEFT JOIN aivory_ops.invoice_lines l ON l.invoice_id=i.id AND l.tenant_id=i.tenant_id WHERE i.id = $1 AND i.tenant_id = $2 GROUP BY i.id",
+          "resource": "database"
+        },
+        "position": [
+          780,
+          480
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "alwaysOutputData": true,
+        "credentials": {
+          "postgres": {
+            "id": "JBXrVIufQS1n38mD",
+            "name": "Aivory Postgres (native ops)"
+          }
+        },
+        "id": "731553b3-cad3-46ba-bbba-a269acb22706",
+        "name": "PG Update Invoice Status",
+        "parameters": {
+          "operation": "executeQuery",
+          "options": {
+            "queryReplacement": "={{ $json.body.invoice_id }},{{ $json.body.tenant_id }},{{ $json.body.status }}"
+          },
+          "query": "UPDATE aivory_ops.invoices SET status=$3, updated_at=now() WHERE id=$1 AND tenant_id=$2 RETURNING id, status",
+          "resource": "database"
+        },
+        "position": [
+          780,
+          620
+        ],
+        "type": "n8n-nodes-base.postgres",
+        "typeVersion": 2.6
+      },
+      {
+        "id": "c13111b4-f45b-473d-a09f-338268f20b9e",
+        "name": "Respond Unknown Action",
+        "parameters": {
+          "options": {
+            "responseCode": 400
+          },
+          "respondWith": "json",
+          "responseBody": "={{ { \"error\": \"unknown action\" } }}"
+        },
+        "position": [
+          780,
+          760
+        ],
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5
+      },
+      {
+        "id": "72c4d161-26c0-4870-815f-a035680f8e86",
+        "name": "Respond Success",
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $json }}"
+        },
+        "position": [
+          1660,
+          300
+        ],
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.5
+      }
+    ],
+    "updatedAt": "2026-08-30T10:28:59.106Z",
+    "versionId": "7fe94bc8-4b32-4c59-bc46-bbb2a8c5d377",
+    "workflowId": "Dgmai5aN8y1qRdyv",
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-08-30T10:28:59.218Z",
+        "event": "activated",
+        "id": 329,
+        "userId": "c1c834f5-4add-4791-9ed5-bb9cc1ce8d9e",
+        "versionId": "7fe94bc8-4b32-4c59-bc46-bbb2a8c5d377",
+        "workflowId": "Dgmai5aN8y1qRdyv"
+      },
+      {
+        "createdAt": "2026-08-30T10:28:59.195Z",
+        "event": "deactivated",
+        "id": 328,
+        "userId": "c1c834f5-4add-4791-9ed5-bb9cc1ce8d9e",
+        "versionId": "7fe94bc8-4b32-4c59-bc46-bbb2a8c5d377",
+        "workflowId": "Dgmai5aN8y1qRdyv"
+      }
+    ]
+  },
+  "activeVersionId": "7fe94bc8-4b32-4c59-bc46-bbb2a8c5d377",
+  "connections": {
+    "Format List Response": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond Success",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Format Success Response": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Respond Success",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Invoice Belongs To Tenant?": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "PG Insert Invoice Line",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Format Success Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Native Finance Invoice Ops Webhook": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Route By Action",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Check Invoice Owner": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Invoice Belongs To Tenant?",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Create Invoice": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format Success Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Get Invoice": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format Success Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Insert Invoice Line": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format Success Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG List Invoices": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format List Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "PG Update Invoice Status": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "Format Success Response",
+            "type": "main"
+          }
+        ]
+      ]
+    },
+    "Route By Action": {
+      "main": [
+        [
+          {
+            "index": 0,
+            "node": "PG Create Invoice",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "PG Check Invoice Owner",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "PG List Invoices",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "PG Get Invoice",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "PG Update Invoice Status",
+            "type": "main"
+          }
+        ],
+        [
+          {
+            "index": 0,
+            "node": "Respond Unknown Action",
+            "type": "main"
+          }
+        ]
+      ]
+    }
+  },
+  "description": "Native Finance Invoice Ops Bridge \u2014 invoice status/tracking backed by aivory_ops.invoices; real payment collection stays on Stripe",
+  "id": "Dgmai5aN8y1qRdyv",
+  "isArchived": false,
+  "name": "Native Finance Invoice Ops Bridge",
+  "nodeGroups": [],
+  "nodes": [
+    {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "EHCLJ4i2zioOVjC2",
+          "name": "Aivory Bridge Secret (X-Bridge-Secret)"
+        }
+      },
+      "id": "d5ddf0ee-dddb-4855-9074-b832c45ae3d2",
+      "name": "Native Finance Invoice Ops Webhook",
+      "parameters": {
+        "authentication": "headerAuth",
+        "httpMethod": "POST",
+        "path": "native-finance-invoice-ops",
+        "responseMode": "responseNode"
+      },
+      "position": [
+        80,
+        400
+      ],
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "webhookId": "19a31569-a91d-418a-a74c-6d78a90dca3b"
+    },
+    {
+      "id": "c960077c-327e-4ca4-8f6b-81014bf9d981",
+      "name": "Route By Action",
+      "parameters": {
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Unknown Action"
+        },
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "create_invoice"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "create_invoice"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "add_invoice_line"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "add_invoice_line"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "list_invoices"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "list_invoices"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "get_invoice"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "get_invoice"
+            },
+            {
+              "conditions": {
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "operator": {
+                      "operation": "equals",
+                      "type": "string"
+                    },
+                    "rightValue": "update_invoice_status"
+                  }
+                ],
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                }
+              },
+              "outputKey": "update_invoice_status"
+            }
+          ]
+        }
+      },
+      "position": [
+        520,
+        300
+      ],
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2
+    },
+    {
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "5c66264a-a99c-4d4e-af64-f4bfd06ad655",
+      "name": "PG Create Invoice",
+      "parameters": {
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "currency": "={{ $json.body.currency || 'USD' }}",
+            "customer_email": "={{ $json.body.customer_email || '' }}",
+            "customer_name": "={{ $json.body.customer_name }}",
+            "due_date": "={{ $json.body.due_date || null }}",
+            "tenant_id": "={{ $json.body.tenant_id }}"
+          }
+        },
+        "operation": "insert",
+        "resource": "database",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "aivory_ops"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "invoices"
+        }
+      },
+      "position": [
+        780,
+        60
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "id": "84094534-c49f-4622-867d-3a383e4de817",
+      "name": "Format Success Response",
+      "parameters": {
+        "jsonOutput": "={{ $input.all().filter(i => i.json && i.json.id).length === 0 ? { \"success\": false, \"error\": \"Not found, or not accessible to this tenant.\" } : { \"success\": true, \"data\": $input.all().filter(i => i.json && i.json.id).map(i => i.json) } }}",
+        "mode": "raw"
+      },
+      "position": [
+        1440,
+        300
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "f6885b0a-5a0c-46ea-be00-0e7dddbbac31",
+      "name": "PG Check Invoice Owner",
+      "parameters": {
+        "combineConditions": "AND",
+        "limit": 1,
+        "operation": "select",
+        "resource": "database",
+        "returnAll": false,
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "aivory_ops"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "invoices"
+        },
+        "where": {
+          "values": [
+            {
+              "column": "id",
+              "condition": "equal",
+              "value": "={{ $json.body.invoice_id }}"
+            },
+            {
+              "column": "tenant_id",
+              "condition": "equal",
+              "value": "={{ $json.body.tenant_id }}"
+            }
+          ]
+        }
+      },
+      "position": [
+        780,
+        200
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "id": "f8ab33ae-79b6-402c-b461-78e88a05da5c",
+      "name": "Invoice Belongs To Tenant?",
+      "parameters": {
+        "conditions": {
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id }}",
+              "operator": {
+                "operation": "exists",
+                "type": "string"
+              },
+              "rightValue": ""
+            }
+          ],
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          }
+        }
+      },
+      "position": [
+        1000,
+        200
+      ],
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2
+    },
+    {
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "57f52cfc-9734-4477-8583-6a10acdb5863",
+      "name": "PG Insert Invoice Line",
+      "parameters": {
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "description": "={{ $('Native Finance Invoice Ops Webhook').item.json.body.description }}",
+            "invoice_id": "={{ $('Native Finance Invoice Ops Webhook').item.json.body.invoice_id }}",
+            "quantity": "={{ $('Native Finance Invoice Ops Webhook').item.json.body.quantity || 1 }}",
+            "tenant_id": "={{ $('Native Finance Invoice Ops Webhook').item.json.body.tenant_id }}",
+            "unit_price": "={{ $('Native Finance Invoice Ops Webhook').item.json.body.unit_price || 0 }}"
+          }
+        },
+        "operation": "insert",
+        "resource": "database",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "aivory_ops"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": "invoice_lines"
+        }
+      },
+      "position": [
+        1220,
+        140
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "43243efd-56ac-46f3-a507-a5e33d58fca1",
+      "name": "PG List Invoices",
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ $json.body.tenant_id }},{{ $json.body.status || 'all' }}"
+        },
+        "query": "SELECT i.id, i.customer_name, i.status, i.currency, i.due_date, i.created_at, COALESCE((SELECT SUM(quantity*unit_price) FROM aivory_ops.invoice_lines WHERE invoice_id=i.id AND tenant_id=i.tenant_id), 0) as total_amount FROM aivory_ops.invoices i WHERE i.tenant_id = $1 AND ($2 = 'all' OR i.status = $2) ORDER BY i.created_at DESC LIMIT 50",
+        "resource": "database"
+      },
+      "position": [
+        780,
+        340
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "id": "c0d23202-4477-4607-82f1-1c69997b400a",
+      "name": "Format List Response",
+      "parameters": {
+        "jsonOutput": "={{ { \"success\": true, \"data\": $input.all().filter(i => i.json && i.json.id).map(i => i.json) } }}",
+        "mode": "raw"
+      },
+      "position": [
+        1040,
+        340
+      ],
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "6af523d4-1fd1-4a66-9ced-195478513a44",
+      "name": "PG Get Invoice",
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ $json.body.invoice_id }},{{ $json.body.tenant_id }}"
+        },
+        "query": "SELECT i.id, i.customer_name, i.customer_email, i.status, i.currency, i.due_date, i.created_at, i.updated_at, COALESCE((SELECT SUM(quantity*unit_price) FROM aivory_ops.invoice_lines WHERE invoice_id=i.id AND tenant_id=i.tenant_id), 0) as total_amount, COALESCE(json_agg(json_build_object('description',l.description,'quantity',l.quantity,'unit_price',l.unit_price) ORDER BY l.created_at) FILTER (WHERE l.id IS NOT NULL), '[]') as lines FROM aivory_ops.invoices i LEFT JOIN aivory_ops.invoice_lines l ON l.invoice_id=i.id AND l.tenant_id=i.tenant_id WHERE i.id = $1 AND i.tenant_id = $2 GROUP BY i.id",
+        "resource": "database"
+      },
+      "position": [
+        780,
+        480
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "JBXrVIufQS1n38mD",
+          "name": "Aivory Postgres (native ops)"
+        }
+      },
+      "id": "731553b3-cad3-46ba-bbba-a269acb22706",
+      "name": "PG Update Invoice Status",
+      "parameters": {
+        "operation": "executeQuery",
+        "options": {
+          "queryReplacement": "={{ $json.body.invoice_id }},{{ $json.body.tenant_id }},{{ $json.body.status }}"
+        },
+        "query": "UPDATE aivory_ops.invoices SET status=$3, updated_at=now() WHERE id=$1 AND tenant_id=$2 RETURNING id, status",
+        "resource": "database"
+      },
+      "position": [
+        780,
+        620
+      ],
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6
+    },
+    {
+      "id": "c13111b4-f45b-473d-a09f-338268f20b9e",
+      "name": "Respond Unknown Action",
+      "parameters": {
+        "options": {
+          "responseCode": 400
+        },
+        "respondWith": "json",
+        "responseBody": "={{ { \"error\": \"unknown action\" } }}"
+      },
+      "position": [
+        780,
+        760
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5
+    },
+    {
+      "id": "72c4d161-26c0-4870-815f-a035680f8e86",
+      "name": "Respond Success",
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "position": [
+        1660,
+        300
+      ],
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5
+    }
+  ],
+  "pinData": null,
+  "settings": {
+    "availableInMCP": true,
+    "executionOrder": "v1"
+  },
+  "sourceWorkflowId": null,
+  "staticData": null,
+  "tags": [],
+  "versionCounter": 3
+}

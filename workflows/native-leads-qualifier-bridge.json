@@ -4,24 +4,6 @@
     "authors": "Admin Aivory",
     "autosaved": false,
     "connections": {
-      "Check Bridge Secret": {
-        "main": [
-          [
-            {
-              "index": 0,
-              "node": "Route By Action",
-              "type": "main"
-            }
-          ],
-          [
-            {
-              "index": 0,
-              "node": "Respond Unauthorized",
-              "type": "main"
-            }
-          ]
-        ]
-      },
       "Format Enrichment Response": {
         "main": [
           [
@@ -194,7 +176,7 @@
           [
             {
               "index": 0,
-              "node": "Check Bridge Secret",
+              "node": "Route By Action",
               "type": "main"
             }
           ]
@@ -404,16 +386,22 @@
         ]
       }
     },
-    "createdAt": "2026-08-30T08:25:18.122Z",
+    "createdAt": "2026-08-30T10:28:58.932Z",
     "description": null,
     "name": null,
     "nodeGroups": [],
     "nodes": [
       {
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "EHCLJ4i2zioOVjC2",
+            "name": "Aivory Bridge Secret (X-Bridge-Secret)"
+          }
+        },
         "id": "3339a6c8-2d7f-4830-9dc9-a2690bc17075",
         "name": "Native Leads Qualifier Webhook",
         "parameters": {
-          "authentication": "none",
+          "authentication": "headerAuth",
           "httpMethod": "POST",
           "path": "native-leads-qualifier",
           "responseMode": "responseNode"
@@ -425,36 +413,6 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2.1,
         "webhookId": "6548627e-c2cb-4dd5-9dee-1878754cd751"
-      },
-      {
-        "id": "0b63fa2f-8c75-49e3-991c-b034a761ce86",
-        "name": "Check Bridge Secret",
-        "parameters": {
-          "conditions": {
-            "combinator": "and",
-            "conditions": [
-              {
-                "leftValue": "={{ $json.headers['x-bridge-secret'] }}",
-                "operator": {
-                  "operation": "equals",
-                  "type": "string"
-                },
-                "rightValue": "<<REDACTED:N8N_SHARED_SECRET>>"
-              }
-            ],
-            "options": {
-              "caseSensitive": true,
-              "leftValue": "",
-              "typeValidation": "strict"
-            }
-          }
-        },
-        "position": [
-          300,
-          400
-        ],
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 2.2
       },
       {
         "id": "a6457a77-7a3c-4d66-bef6-6abd127da04b",
@@ -847,23 +805,6 @@
         "position": [
           780,
           760
-        ],
-        "type": "n8n-nodes-base.respondToWebhook",
-        "typeVersion": 1.5
-      },
-      {
-        "id": "4bf6afe8-e0cc-4c0e-a4d7-e5539cfc7a8c",
-        "name": "Respond Unauthorized",
-        "parameters": {
-          "options": {
-            "responseCode": 401
-          },
-          "respondWith": "json",
-          "responseBody": "={{ { \"error\": \"unauthorized\" } }}"
-        },
-        "position": [
-          520,
-          560
         ],
         "type": "n8n-nodes-base.respondToWebhook",
         "typeVersion": 1.5
@@ -1350,48 +1291,30 @@
         "typeVersion": 3.4
       }
     ],
-    "updatedAt": "2026-08-30T08:25:18.122Z",
-    "versionId": "bafa0e58-a5ac-4efc-a1a0-ee1b0d5a8038",
+    "updatedAt": "2026-08-30T10:28:58.932Z",
+    "versionId": "7612bb1e-5e2f-4478-8737-b78d43535202",
     "workflowId": "ebaq7yFRfYdrL3gT",
     "workflowPublishHistory": [
       {
-        "createdAt": "2026-08-30T08:25:18.355Z",
+        "createdAt": "2026-08-30T10:28:59.021Z",
         "event": "activated",
-        "id": 325,
+        "id": 327,
         "userId": "c1c834f5-4add-4791-9ed5-bb9cc1ce8d9e",
-        "versionId": "bafa0e58-a5ac-4efc-a1a0-ee1b0d5a8038",
+        "versionId": "7612bb1e-5e2f-4478-8737-b78d43535202",
         "workflowId": "ebaq7yFRfYdrL3gT"
       },
       {
-        "createdAt": "2026-08-30T08:25:18.318Z",
+        "createdAt": "2026-08-30T10:28:59.000Z",
         "event": "deactivated",
-        "id": 324,
+        "id": 326,
         "userId": "c1c834f5-4add-4791-9ed5-bb9cc1ce8d9e",
-        "versionId": "bafa0e58-a5ac-4efc-a1a0-ee1b0d5a8038",
+        "versionId": "7612bb1e-5e2f-4478-8737-b78d43535202",
         "workflowId": "ebaq7yFRfYdrL3gT"
       }
     ]
   },
-  "activeVersionId": "bafa0e58-a5ac-4efc-a1a0-ee1b0d5a8038",
+  "activeVersionId": "7612bb1e-5e2f-4478-8737-b78d43535202",
   "connections": {
-    "Check Bridge Secret": {
-      "main": [
-        [
-          {
-            "index": 0,
-            "node": "Route By Action",
-            "type": "main"
-          }
-        ],
-        [
-          {
-            "index": 0,
-            "node": "Respond Unauthorized",
-            "type": "main"
-          }
-        ]
-      ]
-    },
     "Format Enrichment Response": {
       "main": [
         [
@@ -1564,7 +1487,7 @@
         [
           {
             "index": 0,
-            "node": "Check Bridge Secret",
+            "node": "Route By Action",
             "type": "main"
           }
         ]
@@ -1781,10 +1704,16 @@
   "nodeGroups": [],
   "nodes": [
     {
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "EHCLJ4i2zioOVjC2",
+          "name": "Aivory Bridge Secret (X-Bridge-Secret)"
+        }
+      },
       "id": "3339a6c8-2d7f-4830-9dc9-a2690bc17075",
       "name": "Native Leads Qualifier Webhook",
       "parameters": {
-        "authentication": "none",
+        "authentication": "headerAuth",
         "httpMethod": "POST",
         "path": "native-leads-qualifier",
         "responseMode": "responseNode"
@@ -1796,36 +1725,6 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "webhookId": "6548627e-c2cb-4dd5-9dee-1878754cd751"
-    },
-    {
-      "id": "0b63fa2f-8c75-49e3-991c-b034a761ce86",
-      "name": "Check Bridge Secret",
-      "parameters": {
-        "conditions": {
-          "combinator": "and",
-          "conditions": [
-            {
-              "leftValue": "={{ $json.headers['x-bridge-secret'] }}",
-              "operator": {
-                "operation": "equals",
-                "type": "string"
-              },
-              "rightValue": "<<REDACTED:N8N_SHARED_SECRET>>"
-            }
-          ],
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict"
-          }
-        }
-      },
-      "position": [
-        300,
-        400
-      ],
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2
     },
     {
       "id": "a6457a77-7a3c-4d66-bef6-6abd127da04b",
@@ -2218,23 +2117,6 @@
       "position": [
         780,
         760
-      ],
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.5
-    },
-    {
-      "id": "4bf6afe8-e0cc-4c0e-a4d7-e5539cfc7a8c",
-      "name": "Respond Unauthorized",
-      "parameters": {
-        "options": {
-          "responseCode": 401
-        },
-        "respondWith": "json",
-        "responseBody": "={{ { \"error\": \"unauthorized\" } }}"
-      },
-      "position": [
-        520,
-        560
       ],
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5
@@ -2729,5 +2611,5 @@
   "sourceWorkflowId": null,
   "staticData": null,
   "tags": [],
-  "versionCounter": 5
+  "versionCounter": 6
 }
